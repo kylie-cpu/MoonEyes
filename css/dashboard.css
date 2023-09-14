@@ -1,0 +1,56 @@
+body {
+  font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+  margin-left: 18px;
+  background-color: rgb(255, 255, 255);
+}
+
+h1 {
+  color: #07063a;
+  display: flex;
+  margin-bottom: 10px;
+}
+
+h2 {
+  margin-top: 0;
+  margin-bottom: 5px;
+}
+
+h3 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  color: #535353;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin-bottom: 20px;
+  box-shadow: 0 10px 25px rgba(92, 99, 105, .2);
+}
+
+table th,
+table td {
+  border: 1px solid #6e6e6e;
+  padding: 8px;
+  background-color: #ebebeb63;
+}
+
+table th {
+  background-color: #c2c2c2;
+}
+
+tr:hover td a {
+  color: rgb(125, 186, 255);
+}
+
+ 
+/* color of status cells */
+.open-bg {
+  background-color: #8ace7e;
+}
+.closed-bg {
+  background-color: #fa4e4e;
+}
+.pending-bg {
+  background-color: #ffda66;
+}
