@@ -15,40 +15,17 @@
   date_default_timezone_set('America/Detroit');
   $date = date('Y-m-d H:i:s');
 
-  //Client names for drop down
-  $query = "SELECT * FROM clients ORDER BY day_modified DESC";
-  $result = $conn->query($query);
-  if ($result->num_rows > 0) {
-    while ($row = $result->fetch_assoc()) {
-        $client_names[] = $row['client_name'];
-    }
-  }
-
-  //Subject names for drop down
-  $query = "SELECT subject_name FROM subjects ORDER BY day_modified DESC";
-  $result = $conn->query($query);
-  if ($result->num_rows > 0) {
-    while ($row = $result->fetch_assoc()) {
-        $subject_names[] = $row['subject_name'];
-    }
-  }
-
-  //Agent names for drop down
-  $query = "SELECT name FROM agents ORDER BY modified_at DESC";
-  $result = $conn->query($query);
-  if ($result->num_rows > 0) {
-    while ($row = $result->fetch_assoc()) {
-      $agent_names[] = $row['name'];
-    }
-  }
+  // Populate dropdowns
+  include('dropdowns.php');
 
 
   if ($_POST) {
     $case_id = $unique_case_id;
-    $title = $_POST['title'];
-    $purpose = $_POST['purpose'];
+    $title = preg_replace("/'/", "", $_POST['title']);
+    $purpose = preg_replace("/'/", "", $_POST['purpose']);
     $status = $_POST['status'];
-    $invoice = $_POST['invoice_info'];
+    $invoice = preg_replace("/'/", "", $_POST['invoice']);
+    $assoc_client = $_POST['related_client'];
     // regex out single quotes from notes...
     $notes = preg_replace("/'/", "", $_POST['notes']);
     $modified_by = $agent_id;
@@ -239,3 +216,4 @@
 
   </body>
 </html>
+

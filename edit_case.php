@@ -15,35 +15,8 @@
   date_default_timezone_set('America/Detroit');
   $new_date = date('Y-m-d H:i:s');
 
-  //Client names for drop down
-  $query = "SELECT client_name FROM clients ORDER BY day_modified DESC";
-  $result = $conn->query($query);
-  if ($result->num_rows > 0) {
-      $client_names = [];
-      while ($row = $result->fetch_assoc()) {
-        $client_names[] = $row['client_name'];
-      }
-  }
-
-  //Subject names for drop down
-  $query = "SELECT subject_name FROM subjects ORDER BY day_modified DESC";
-  $result = $conn->query($query);
-  if ($result->num_rows > 0) {
-      $subject_names = [];
-      while ($row = $result->fetch_assoc()) {
-        $subject_names[] = $row['subject_name'];
-      }
-  }
-
-  //Agent names for drop down
-  $query = "SELECT name FROM agents ORDER BY modified_at DESC";
-  $result = $conn->query($query);
-  if ($result->num_rows > 0) {
-      $agent_names = [];
-      while ($row = $result->fetch_assoc()) {
-        $agent_names[] = $row['name'];
-      }
-  }
+  // Populate dropdowns
+  include('dropdowns.php');
 
   //get case details from cases
   $query_case_details = "SELECT cases.*, GROUP_CONCAT(DISTINCT(clients.client_name) SEPARATOR ', ') AS assoc_client, agents.name AS mod_agent

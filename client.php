@@ -14,15 +14,9 @@
   date_default_timezone_set('America/Detroit');
   $date = date('Y-m-d H:i:s');
 
-  //Case titles for drop down
-  $query = "SELECT title FROM cases ORDER BY day_modified DESC";
-  $result = $conn->query($query);
-  if ($result->num_rows > 0) {
-    while ($row = $result->fetch_assoc()) {
-      $case_titles[] = $row['title'];
-    }
-  }
-
+  // Populate dropdowns
+  include('dropdowns.php');
+  
   //Submit form into clients database
   if ($_POST) {
     $client_id = $unique_client_id;

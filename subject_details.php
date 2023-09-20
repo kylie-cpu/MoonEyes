@@ -16,12 +16,8 @@
     date_default_timezone_set('America/Detroit');
     $date = date('Y-m-d H:i:s');
 
-    //Case titles for drop down
-    $query = "SELECT title FROM cases ORDER BY day_modified DESC";
-    $result = $conn->query($query);
-    if ($result->num_rows > 0) {
-        $case_titles = $result->fetch_all(MYSQLI_ASSOC);
-    }
+    // Populate dropdowns
+    include('dropdowns.php');
 
     // get subject details from subjects
     $query_subject_details = "SELECT subjects.*, agents.name AS mod_agent, lawyers.lawyer_name AS lawyer_name, lawyers.lawyer_email AS lawyer_email
@@ -47,7 +43,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Add a Subject</title>
+        <title>Subject Details</title>
         <!-- Select 2 CSS -->
         <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
         <link rel="stylesheet" type="text/css" href="css/add.css">
@@ -156,7 +152,7 @@
                     </div>
                     
                     <div class="form-group">
-                        <a href="edit_subject.php?case_id=<?php echo $subject['subject_id']; ?>" class="edit-btn">Edit</a>
+                        <a href="edit_subject.php?subject_id=<?php echo $subject['subject_id']; ?>" class="edit-btn">Edit</a>
                     </div>
                 <?php } ?>
             </form>

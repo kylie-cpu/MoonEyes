@@ -16,12 +16,8 @@
     date_default_timezone_set('America/Detroit');
     $date = date('Y-m-d H:i:s');
 
-    //Case titles for drop down
-    $query = "SELECT title FROM cases ORDER BY day_modified DESC";
-    $result = $conn->query($query);
-    if ($result->num_rows > 0) {
-        $case_titles = $result->fetch_all(MYSQLI_ASSOC);
-    }
+    // Populate dropdowns
+    include('dropdowns.php');
 
     // get client details from clients
     $query_client_details = "SELECT clients.*, agents.name AS mod_agent, lawyers.lawyer_name AS lawyer_name, lawyers.lawyer_email AS lawyer_email
@@ -151,7 +147,7 @@
                 </div>
                 
                 <div class="form-group">
-                    <a href="edit_client.php?case_id=<?php echo $client['client_id']; ?>" class="edit-btn">Edit</a>
+                    <a href="edit_client.php?client_id=<?php echo $client['client_id']; ?>" class="edit-btn">Edit</a>
                 </div>
             <?php } ?>
         </form>

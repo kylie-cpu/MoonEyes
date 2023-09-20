@@ -29,8 +29,8 @@
     $notes = preg_replace("/'/", "", $_POST['notes']);
     $modified_by = $agent_id;
     $day_modified = $date;
-    $vehicle_info = $_POST['vehicle_info'];
-    $pow = $_POST['place_of_work'];
+    $vehicle_info =  preg_replace("/'/", "", $_POST['vehicle_info']);
+    $pow =  preg_replace("/'/", "", $_POST['place_of_work']);
     $associates = $_POST['associates'];
 
     // Insert into subjects
@@ -66,7 +66,6 @@
       }
     }
 
-    // echo var_dump($related_cases);
     // Redirect back to dashboard after submission
     header("Location: dashboard.php"); 
     exit;
