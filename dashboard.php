@@ -71,7 +71,7 @@
   <body>
     <!-- Dashboard Tables -->
     <div id="content">
-      <h1>Your Dashboard</h1>
+      <h1><?php echo $name?>'s Dashboard</h1>
       <h2>Your Open Cases: <?php echo $num_open?> </h2>
       <table>
         <tr>

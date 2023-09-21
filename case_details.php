@@ -111,12 +111,13 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="media">Additional Media:</label>
+                        <label for="media">Additional Media</label>
+                        <input type="file" id="media" name="media" readonly>
                     </div>
 
                     <div class="form-group">
                         <label for="related_client"><span class="required">*</span>Associated Client:</label>
-                        <select id="related_client" name="related_client" class="js-example-basic-single" style="width: 100%;">
+                        <select id="related_client" name="related_client[]" class="js-example-basic-single" style="width: 100%;" multiple="multiple">
                         <option value=""></option>
                         <option value="<?php echo $case['assoc_client']; ?>" selected><?php echo $case['assoc_client']; ?></option>
                         </select>
@@ -154,6 +155,7 @@
 
                     <div class="form-group">
                         <a href="edit_case.php?case_id=<?php echo $case['case_id']; ?>" class="edit-btn">Edit</a>
+                        <a href=# onclick="window.print();" class="print-btn">Print/PDF</a>
                     </div>
                 <?php } ?>
             </form>
@@ -165,6 +167,7 @@
                 $('.js-example-basic-single').select2({
                     placeholder: 'Select a client...',
                     allowClear: true, 
+                    maximumSelectionLength: 1,
                     data: <?php echo json_encode($client_names); ?>,
                 });
 

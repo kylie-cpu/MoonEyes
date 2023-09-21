@@ -129,7 +129,8 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="media">Additional Media:</label>
+                        <label for="media">Additional Media</label>
+                        <input type="file" id="media" name="media">
                     </div>
 
                     <div class="form-group">
@@ -153,6 +154,7 @@
                     
                     <div class="form-group">
                         <a href="edit_subject.php?subject_id=<?php echo $subject['subject_id']; ?>" class="edit-btn">Edit</a>
+                        <a href=# onclick="window.print();" class="print-btn">Print/PDF</a>
                     </div>
                 <?php } ?>
             </form>

@@ -184,7 +184,6 @@
                         <label for="lawyer-email">Lawyer Email:</label>
                         <input type="email" id="lawyer-email" name="lawyer-email" value="<?php echo $subject['lawyer_email']; ?>">
                     </div>
-                </div>
 
                     <div class="form-group">
                         <label for="notes">Notes:</label>

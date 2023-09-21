@@ -1,9 +1,22 @@
 body {
-    background: rgb(248, 246, 246);
+    background: rgb(255, 255, 255);
     background: cover;
     font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
 }
 
+.logo {
+    text-align: center; /* Logo takes up available space */
+}
+
+.logo img {
+    width: 400px; /* Adjust the width of the logo as needed */
+    height: 100px;
+    margin-bottom: 16px;
+}
+    
+.mainbox {
+    margin: 60px;
+}
 .login-Header {
     margin-top: 90px;
     text-align: center;
@@ -46,7 +59,7 @@ body {
     background-color: #3562c4;
     color: white;
     padding: 14px 20px;
-    margin: 8px 0;
+    margin: 2px 0;
     border: none;
     cursor: pointer;
     width: 30%;

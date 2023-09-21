@@ -31,8 +31,8 @@
 </head>
 <body>
 	<div class="mainbox">
-		<div class="login-Header">
-			<h1>Moon Eyes Login</h1>
+		<div class="logo">
+			<img src="images/logo.png" alt="Logo">
 		</div>
 		<div class="login-Body">
 			<form action ="login-form.php" method="POST">

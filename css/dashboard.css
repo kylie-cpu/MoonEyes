@@ -1,7 +1,7 @@
 body {
-  font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+  font-family: Arial, Helvetica, sans-serif;
   margin-left: 18px;
-  background-color: rgb(255, 255, 255);
+  background-color: rgb(235, 231, 231);
 }
 
 h1 {
@@ -23,20 +23,20 @@ h3 {
 
 table {
   border-collapse: collapse;
-  width: 100%;
+  width: 90%;
   margin-bottom: 20px;
   box-shadow: 0 10px 25px rgba(92, 99, 105, .2);
 }
 
 table th,
 table td {
-  border: 1px solid #6e6e6e;
+  border: 1px solid #424242;
   padding: 8px;
-  background-color: #ebebeb63;
+  background-color: #fffffffa;
 }
 
 table th {
-  background-color: #c2c2c2;
+  background-color: rgba(110, 148, 252, 0.541);
 }
 
 tr:hover td a {

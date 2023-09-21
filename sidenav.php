@@ -1,41 +1,30 @@
-
-<!-- Side navigation for every page -->
-<div class="sidenav-banner">
-    <div id="sidenav" class="sidenav">
-        <a href="javascript:void(0)" class="closebtn" onclick="close_menu ();">&times;</a>
-        <p>Welcome, <br><?php echo $name; ?>!</p>
-        <a href="dashboard.php">Dashboard</a>
-        <a href="case.php">Add a case</a>
-        <a href="client.php">Add a client</a>
-        <a href="subject.php">Add a subject</a>
-        <a href="search.php">Search</a>  
-        <?php
-            // Check if the user has admin role before displaying admin controls
-            if ($_SESSION['user'][0]['role'] == 'admin') {
-                echo '<a href="admin.php">Admin Controls</a>';
-            }
-        ?>
-         <a href="login-form.php" onclick="return confirm('Are you sure you want to log out?')">Log out</a>
+<!-- Top navigation bar -->
+<div class="top-navbar">
+    <!-- Logo -->
+    <div class="logo">
+        <img src="images/logo2.png" alt="Logo">
     </div>
 
-    <!-- Menu button & top banner-->
-    <div class="banner">
-        <div class="menu">
-            <span style="font-size:18px;margin: 16px; cursor:pointer; color:#fff;" onclick="open_menu()"><a href='#'></a>&#9776; Open Menu </span>
+    <a href="dashboard.php">&#x1F3E0; Home</a>
+
+    <!-- Dropdown for "Add" -->
+    <div class="dropdown">
+        <div class="dropbtn"><a href=#>&#128193; Add</a></div>
+        <div class="dropdown-content">
+            <a href="case.php">Add a Case</a>
+            <a href="client.php">Add a Client</a>
+            <a href="subject.php">Add a Subject</a>
+            <a href="tags.php">Add a Tag</a>
         </div>
-        <p style="margin-left: 30%">Moon Eyes: Metro Detective Agency Case Tracking System</p>
     </div>
+    <!-- Other links -->
+    <a href="search.php">&#x1F50D; Search</a>
+    <a href="email.php">&#128232; Email</a>
+    <?php
+        // Check if the user has admin role before displaying admin controls
+        if ($_SESSION['user'][0]['role'] == 'admin') {
+            echo '<a href="admin.php">&#x1F4BB; Admin Controls</a>';
+        }
+    ?>
+    <a href="login-form.php" onclick="return confirm('Are you sure you want to log out?')">&hookrightarrow; Log out</a>
 </div>
-
-<script>
-    // Sidenav open & close functionality
-    function open_menu() {
-        document.getElementById("sidenav").style.width = "210px";
-        document.getElementById("content").style.marginLeft = "210px";
-    }
-
-    function close_menu() {
-        document.getElementById("sidenav").style.width = "0";
-        document.getElementById("content").style.marginLeft = "0";
-    }
-</script>
