@@ -156,7 +156,7 @@
 
         <div class="form-group">
           <label for="related_client"><span class="required">*</span>Associated Client:</label>
-          <select id="related_client" name="related_client" class="js-example-basic-single" style="width: 100%;">
+          <select id="related_client" name="related_client[]" class="js-example-basic-single" style="width: 100%;" multiple="multiple">
             <option value=""></option>
           </select>
         </div>
@@ -197,6 +197,7 @@
         $('.js-example-basic-single').select2({
           placeholder: 'Select a client...',
           allowClear: true, 
+          maximumSelectionLength: 1,
           data: <?php echo json_encode($client_names); ?>,
         });
 
