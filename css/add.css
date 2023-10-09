@@ -1,5 +1,5 @@
 body {
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
   color: #000;
   margin: 0;
   padding: 0;
@@ -17,11 +17,12 @@ body {
 .subject-form,
 .case-form,
 .agent-form {
-  background-color: white;
+  background-color: rgba(255, 255, 255, 0.466);
   width: 80%;
   border-radius: 8px;
   padding: 20px 40px;
   box-shadow: 0 10px 25px rgba(92, 99, 105, .2);
+  margin-bottom: 50px;
 }
 
 h2 {
@@ -32,8 +33,27 @@ h2 {
 }
 
 .form-group {
+  width: 100%;
   margin-bottom: 20px;
 }
+
+.form-group1 {
+  width: 48%; 
+  display: inline-block; 
+  box-sizing: border-box; 
+  margin-bottom: 20px;
+  padding-right: 5%;
+}
+
+.form-group2 {
+  width: 48%; 
+  display: inline-block; 
+  box-sizing: border-box; 
+  margin-left: 20px; 
+  margin-bottom: 20px;
+  padding-left: 5%;
+}
+
 
 label {
   display: block;
@@ -49,8 +69,12 @@ h3 {
 }
 
 .sub-form-group{
-  margin-left: 30px;
+  width: 30%; 
+  display: inline-block; 
+  box-sizing: border-box; 
+  margin-left: 20px; 
   margin-bottom: 20px;
+  padding-right: 5%;
 }
 
 input,
@@ -60,8 +84,8 @@ textarea {
   border: 1px solid #747474;
   border-radius: 5px;
   font-size: 16px;
-  font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
-  background-color: rgba(223, 221, 221, 0.712);
+  font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+  background-color: rgba(230, 228, 228, 0.466);
 }
 
 .submit-btn {
@@ -73,7 +97,7 @@ textarea {
   cursor: pointer;
   font-size: 18px;
   margin-top: 10px;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
   text-decoration: none;
 }
 
@@ -87,7 +111,7 @@ textarea {
   cursor: pointer;
   font-size: 18px;
   margin-top: 10px;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
   background-color: #dc3545;
   text-decoration: none;
 }
@@ -96,26 +120,12 @@ textarea {
   color: #ffffff;
   border: none;
   padding: 10px 15px;
-  margin-top: 10px;
+  margin-top: 20px;
   border-radius: 5px;
   cursor: pointer;
   font-size: 18px;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-  background-color: #f39d1c;
-  text-decoration: none;
-}
-
-.delete-btn {
-  color: #ffffff;
-  border: none;
-  padding: 10px 15px;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 18px;
-  margin-top: 10px;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-  background-color: #dc3545;
-  margin-left: 10px;
+  background-color: #dc8035;
+  font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
   text-decoration: none;
 }
 
@@ -126,8 +136,8 @@ textarea {
   border-radius: 5px;
   cursor: pointer;
   font-size: 18px;
-  margin-top: 10px;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  margin-top: 20px;
+  font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
   background-color: #57a049;
   margin-left: 10px;
   text-decoration: none;
@@ -146,6 +156,7 @@ textarea {
   opacity: 0.8;
 }
 
+/* Print Format */
 @media print {
   body {
     margin: 0;
@@ -159,7 +170,6 @@ textarea {
   #content,
   #content * {
     visibility: visible;
-    width: 95%;
   }
 
   #content {
@@ -173,18 +183,50 @@ textarea {
   .case-form,
   .agent-form {
     background-color: white;
-    width: 100%;
     border-radius: 8px;
+    box-shadow: none !important;
+    width: 100%  !important;
+  }
+
+  .form-group {
+    margin-bottom: 5px !important;
+    margin-left: 0px !important;
+    padding: 0px !important;
+    width: 100% !important;
+
+  }
+
+  .form-group1{
+    margin-bottom: 5px !important;
+    margin-left: 0px !important;
+    padding: 0px !important;
+    width: 100% !important;
+
+  }
+
+  .form-group2 {
+    margin-bottom: 5px !important;
+    margin-left: 0px !important;
+    padding: 0px !important;
+    width: 100% !important;
+
+  }
+
+  .sub-form-group {
+    margin-bottom: 5px !important;
+    margin-left: 10px !important;
+    padding: 0px !important;
+    width: 100% !important;
   }
 
   input,
   textarea {
-  padding: 5px;
-  border: 1px solid #b1b1b1;
-  border-radius: 5px;
-  font-size: 13px;
-  font-family: Arial;
-  background-color: rgb(255, 255, 255);
+    padding: 5px;
+    border: none;
+    border-radius: 5px;
+    font-size: 13px;
+    font-family: Arial;
+    background-color: rgb(255, 255, 255);
   }
 
   .print-btn {
@@ -201,11 +243,6 @@ textarea {
     margin-top: 4px;
   }
 
-  .form-group {
-    margin-bottom: 5px;
-  }
-
-
   h3 {
     display: block;
     color: #4d4d4d;
@@ -219,6 +256,4 @@ textarea {
     font-size: 15px;
   }
   
-
-
 }

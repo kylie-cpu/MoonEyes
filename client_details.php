@@ -20,7 +20,7 @@
     include('dropdowns.php');
 
     // get client details from clients
-    $query_client_details = "SELECT clients.*, agents.name AS mod_agent, lawyers.lawyer_name AS lawyer_name, lawyers.lawyer_email AS lawyer_email
+    $query_client_details = "SELECT clients.*, agents.name AS mod_agent, lawyers.lawyer_name AS lawyer_name, lawyers.lawyer_email AS lawyer_email, lawyers.lawyer_ph as lawyer_ph
     FROM clients
     LEFT JOIN agents on clients.modified_by = agents.agent_id
     LEFT JOIN lawyers ON clients.lawyer = lawyers.lawyer_id
@@ -73,62 +73,87 @@
             <form action="client_details.php" method="POST" class="client-form">
                 <?php if (!empty($client_details)) {
                 $client = $client_details[0]; ?>
-                    <div class="form-group">
-                        <label for="client_id"><span class="required">*</span>Client ID:</label>
+                    <div class="form-group1">
+                        <label for="client_id"><span class="required">*</span>Client ID</label>
                         <input type="text" id="client_id" name="client_id" value="<?php echo $client['client_id']; ?>" readonly>
                     </div>
 
-                    <div class="form-group">
-                        <label for="name"><span class="required">*</span>Name:</label>
+                    <div class="form-group2">
+                        <label for="name"><span class="required">*</span>Name</label>
                         <input type="text" id="name" name="name" value="<?php echo $client['client_name']; ?>" readonly>
                     </div>
 
-                    <div class="form-group">
-                        <label for="email">Email:</label>
+                    <div class="form-group1">
+                        <label for="email">Email</label>
                         <input type="email" id="email" name="email" value="<?php echo $client['email']; ?>" readonly>
                     </div>
 
-                    <div class="form-group">
-                        <label for="address">Address:</label>
-                        <textarea id="address" name="address" rows="4" readonly><?php echo $client['address']; ?></textarea>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="phone">Phone Number:</label>
+                    <div class="form-group2">
+                        <label for="phone">Phone Number</label>
                         <input type="tel" id="phone" name="phone" value="<?php echo $client['phone_num']; ?>" readonly>
                     </div>
 
                     <div class="form-group">
-                        <h3>Lawyer Information:</h3>
+                        <label for="address">Address</label>
+                        <textarea id="address" name="address" rows="4" readonly><?php echo $client['address']; ?></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <h3>Lawyer Information</h3>
                         <div class="sub-form-group">
-                            <label for="lawyer-name">Lawyer Name:</label>
+                            <label for="lawyer-name">Lawyer Name</label>
                             <input type="text" id="lawyer-name" name="lawyer-name" value="<?php echo $client['lawyer_name']; ?>" readonly>
                         </div>
 
                         <div class="sub-form-group">
-                            <label for="lawyer-email">Lawyer Email:</label>
+                            <label for="lawyer-email">Lawyer Email</label>
                             <input type="email" id="lawyer-email" name="lawyer-email" value="<?php echo $client['lawyer_email']; ?>" readonly>
+                        </div>
+                   
+                        <div class="sub-form-group">
+                            <label for="lawyer-ph">Lawyer Phone Number</label>
+                            <input type="tel" id="lawyer-ph" name="lawyer-ph" value="<?php echo $client['lawyer_ph']; ?>" readonly>
                         </div>
                     </div>
 
                     <div class="form-group">
-                        <label for="notes">Notes:</label>
+                        <label for="notes">Notes</label>
                         <textarea id="notes" name="notes" rows="4"readonly><?php echo $client['notes']; ?></textarea>
                     </div>
 
                     <div class="form-group">
-                        <label for="organization_tags">Organization Tags:</label>
+                        <label for="organization_tags">Organization Tags</label>
                         <input type="text" id="organization_tags" name="organization_tags" readonly>
                     </div>
 
                     <div class="form-group">
                         <label for="media">Additional Media</label>
-                        <input type="file" id="media" name="media">
+                        <input type="file" id="media" name="media" style="width: 35%;" multiple disabled>
+                    </div>
+
+                    <div class="form-group1">
+                        <label for="ud1">Field 1</label>
+                        <input type="ud1" id="ud1" name="ud1" value="<?php echo $client['ud1']; ?>" readonly>
+                    </div> 
+                    
+                    <div class="form-group2">
+                        <label for="ud2">Field 2</label>
+                        <input type="ud2" id="ud2" name="ud2" value="<?php echo $client['ud2']; ?>" readonly>
+                    </div>
+                    
+                    <div class="form-group1">
+                        <label for="ud3"> Field 3</label>
+                        <input type="ud3" id="ud3" name="ud3" value="<?php echo $client['ud3']; ?>" readonly>
+                    </div>
+                    
+                    <div class="form-group2">
+                        <label for="ud4">Field 4</label>
+                        <input type="ud4" id="ud4" name="ud4" value="<?php echo $client['ud4']; ?>" readonly>
                     </div>
 
                     <div class="form-group">
-                        <label for="related_cases">Associated Cases:</label>
-                        <select id="related_cases" name="related_cases[]" class="js-example-basic-multiple-cases" multiple="multiple" style="width: 100%;">
+                        <label for="related_cases">Associated Cases</label>
+                        <select id="related_cases" name="related_cases[]" class="js-example-basic-multiple-cases" multiple="multiple" style="width: 44%;" disabled>
                         <option value=""></option>
                         <?php foreach ($assoc_cases as $case) { ?>
                             <option value="<?php echo $case['title']; ?>" selected><?php echo $case['title']; ?></option>
@@ -136,15 +161,15 @@
                         </select>
                     </div>
 
-                    <div class="form-group">
-                        <label for="day_modified"><span class="required">*</span>Date Modified:</label>
+                    <div class="form-group1">
+                        <label for="day_modified"><span class="required">*</span>Date Modified</label>
                         <input type="datetime-local" id="day_modified" name="day_modified" value="<?php echo $client['day_modified']; ?>" readonly>
                     </div>
 
-                    <div class="form-group">
-                        <label for="modified_by"><span class="required">*</span>Modified By:</label>
+                    <div class="form-group2">
+                        <label for="modified_by"><span class="required">*</span>Modified By</label>
                         <input type="text" id="modified_by" name="modified_by" value="<?php echo $client['mod_agent']; ?>" readonly>
-                    </div>
+                    </div><br><br>
                     
                     <div class="form-group">
                         <a href="edit_client.php?client_id=<?php echo $client['client_id']; ?>" class="edit-btn">Edit</a>

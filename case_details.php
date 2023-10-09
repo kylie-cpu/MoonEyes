@@ -76,24 +76,24 @@
             <form action="case_details.php" method="POST" class="case-form" enctype="multipart/form-data">
                 <?php if (!empty($case_details)) {
                 $case = $case_details[0]; ?>
-                    <div class="form-group">
-                        <label for="case_id"><span class="required">*</span>Case ID:</label>
+                    <div class="form-group1">
+                        <label for="case_id"><span class="required">*</span>Case ID</label>
                         <input type="text" id="case_id" name="case_id" value="<?php echo $case['case_id']; ?>" readonly>
                     </div>
 
-                    <div class="form-group">
-                        <label for="title"><span class="required">*</span>Title:</label>
+                    <div class="form-group2">
+                        <label for="title"><span class="required">*</span>Title</label>
                         <input type="text" id="title" name="title" value="<?php echo $case['title']; ?>" readonly>
                     </div>
 
                     <div class="form-group">
-                        <label for="purpose">Purpose of Case:</label>
+                        <label for="purpose">Purpose of Case</label>
                         <textarea id="purpose" name="purpose" rows="4" readonly><?php echo $case['purpose']; ?></textarea>
                     </div>
 
                     <div class="form-group">
-                        <label for="status"><span class="required">*</span>Status:</label>
-                        <select id="status" name="status" style="width: 25%; font-size: large;" readonly>
+                        <label for="status"><span class="required">*</span>Status</label>
+                        <select id="status" name="status" style="width: 10%; font-size: 19px; font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;" disabled>
                             <option value="Open"<?php if ($case['status'] === 'Open') echo ' selected'; ?>>Open</option>
                             <option value="Closed"<?php if ($case['status'] === 'Closed') echo ' selected'; ?>>Closed</option>
                             <option value="Pending"<?php if ($case['status'] === 'Pending') echo ' selected'; ?>>Pending</option>
@@ -101,31 +101,57 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="invoice_info">Invoice Information:</label>
+                        <label for="invoice_info">Invoice Information</label>
                         <textarea id="invoice_info" name="invoice_info" rows="4" readonly><?php echo $case['invoice']; ?></textarea>
                     </div>
 
                     <div class="form-group">
-                        <label for="notes">Notes:</label>
+                        <label for="notes">Notes</label>
                         <textarea id="notes" name="notes" rows="4" readonly><?php echo $case['notes']; ?></textarea>
                     </div>
 
                     <div class="form-group">
-                        <label for="media">Additional Media</label>
-                        <input type="file" id="media" name="media" readonly>
+                        <label for="organization_tags">Organization Tags</label>
+                        <input type="text" id="organization_tags" name="organization_tags">
                     </div>
 
                     <div class="form-group">
-                        <label for="related_client"><span class="required">*</span>Associated Client:</label>
-                        <select id="related_client" name="related_client[]" class="js-example-basic-single" style="width: 100%;" multiple="multiple">
+                        <label for="media">Additional Media</label>
+                        <input type="file" id="media" name="media" style="width: 35%;" disabled>
+                    </div>
+
+                    <div class="form-group1">
+                        <label for="ud1">Field 1</label>
+                        <input type="ud1" id="ud1" name="ud1" value="<?php echo $case['ud1']; ?>" readonly>
+                    </div> 
+                    
+                    <div class="form-group2">
+                        <label for="ud2">Field 2</label>
+                        <input type="ud2" id="ud2" name="ud2" value="<?php echo $case['ud2']; ?>" readonly>
+                    </div>
+                    
+                    <div class="form-group1">
+                        <label for="ud3"> Field 3</label>
+                        <input type="ud3" id="ud3" name="ud3" value="<?php echo $case['ud3']; ?>" readonly>
+                    </div>
+                    
+                    <div class="form-group2">
+                        <label for="ud4">Field 4</label>
+                        <input type="ud4" id="ud4" name="ud4" value="<?php echo $case['ud4']; ?>" readonly>
+                    </div>
+
+
+                    <div class="form-group">
+                        <label for="related_client"><span class="required">*</span>Associated Client</label>
+                        <select id="related_client" name="related_client[]" class="js-example-basic-single" style="width: 43%;" multiple="multiple" disabled>
                         <option value=""></option>
                         <option value="<?php echo $case['assoc_client']; ?>" selected><?php echo $case['assoc_client']; ?></option>
                         </select>
                     </div>
 
-                    <div class="form-group">
-                        <label for="related_subjects">Associated Subjects:</label>
-                        <select id="related_subjects" name="related_subjects[]" class="js-example-basic-multiple-subjects" multiple="multiple" style="width: 100%;" readonly>
+                    <div class="form-group1">
+                        <label for="related_subjects">Associated Subjects</label>
+                        <select id="related_subjects" name="related_subjects[]" class="js-example-basic-multiple-subjects" style="width: 100%;" multiple="multiple"  disabled>
                         <option value=""></option>
                         <?php foreach ($assoc_subjects as $subject) { ?>
                             <option value="<?php echo $subject['subject_name']; ?>" selected><?php echo $subject['subject_name']; ?></option>
@@ -133,9 +159,9 @@
                         </select>
                     </div>
 
-                    <div class="form-group">
-                        <label for="related_agents">Associated Agents:</label>
-                        <select id="related_agents" name="related_agents[]" class="js-example-basic-multiple-agents" multiple="multiple" style="width: 100%;" readonly>
+                    <div class="form-group2">
+                        <label for="related_agents">Associated Agents</label>
+                        <select id="related_agents" name="related_agents[]" class="js-example-basic-multiple-agents" style="width: 100%;" multiple="multiple"  disabled>
                         <option value=""></option>
                         <?php foreach ($assoc_agents as $agent) { ?>
                             <option value="<?php echo $agent['name']; ?>" selected><?php echo $agent['name']; ?></option>
@@ -143,15 +169,15 @@
                         </select>
                     </div>
 
-                    <div class="form-group">
-                        <label for="day_modified"><span class="required">*</span>Date Modified:</label>
+                    <div class="form-group1">
+                        <label for="day_modified"><span class="required">*</span>Date Modified</label>
                         <input type="datetime-local" id="day_modified" name="day_modified" value="<?php echo $case['day_modified']; ?>" readonly>
                     </div>
 
-                    <div class="form-group">
-                        <label for="modified_by"><span class="required">*</span>Modified By:</label>
+                    <div class="form-group2">
+                        <label for="modified_by"><span class="required">*</span>Modified By</label>
                         <input type="text" id="modified_by" name="modified_by" value="<?php echo $case['mod_agent']; ?>" readonly>
-                    </div>
+                    </div><br><br>
 
                     <div class="form-group">
                         <a href="edit_case.php?case_id=<?php echo $case['case_id']; ?>" class="edit-btn">Edit</a>
@@ -166,8 +192,6 @@
                 // single client input field
                 $('.js-example-basic-single').select2({
                     placeholder: 'Select a client...',
-                    allowClear: true, 
-                    maximumSelectionLength: 1,
                     data: <?php echo json_encode($client_names); ?>,
                 });
 

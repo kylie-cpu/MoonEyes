@@ -20,7 +20,7 @@
     include('dropdowns.php');
 
     // get subject details from subjects
-    $query_subject_details = "SELECT subjects.*, agents.name AS mod_agent, lawyers.lawyer_name AS lawyer_name, lawyers.lawyer_email AS lawyer_email
+    $query_subject_details = "SELECT subjects.*, agents.name AS mod_agent, lawyers.lawyer_name AS lawyer_name, lawyers.lawyer_email AS lawyer_email, lawyers.lawyer_ph AS lawyer_ph
     FROM subjects
     LEFT JOIN agents on subjects.modified_by = agents.agent_id
     LEFT JOIN lawyers ON subjects.lawyer = lawyers.lawyer_id
@@ -70,13 +70,13 @@
             <form action="subject_details.php" method="POST" class="subject-form">
                 <?php if (!empty($subject_details)) {
                 $subject = $subject_details[0]; ?>
-                    <div class="form-group">
-                        <label for="subject_id"><span class="required">*</span>Subject ID:</label>
+                    <div class="form-group1">
+                        <label for="subject_id"><span class="required">*</span>Subject ID</label>
                         <input type="text" id="subject_id" name="subject_id" value="<?php echo $subject['subject_id']; ?>" readonly>
                     </div>
 
-                    <div class="form-group">
-                        <label for="name"><span class="required">*</span>Name:</label>
+                    <div class="form-group2">
+                        <label for="name"><span class="required">*</span>Name</label>
                         <input type="text" id="name" name="name" value="<?php echo $subject['subject_name']; ?>" readonly>
                     </div>
 
@@ -90,67 +90,98 @@
                         <textarea id="phone_numbers" name="phone_numbers" rows="4" readonly><?php echo $subject['phone_nums']; ?></textarea>
                     </div>
 
-                    <div class="form-group">
+                    <div class="form-group1">
                         <label for="associates">Associates:</label>
-                        <textarea id="associates" name="associates" rows="4"  readonly><?php echo $subject['associates']; ?></textarea>
+                        <textarea id="associates" name="associates" rows="3"  readonly><?php echo $subject['associates']; ?></textarea>
                     </div>
 
-                    <div class="form-group">
+                    <div class="form-group2">
+                        <label for="place_of_work">Place of Work</label>
+                        <textarea id="place_of_work" name="place_of_work" rows="3" readonly><?php echo $subject['place_of_work']; ?></textarea>
+                    </div>
+
+                    <div class="form-group1">
+                        <label for="gps">GPS Tracking</label>
+                        <textarea id="gps" name="gps" rows="3" readonly><?php echo $subject['gps']; ?></textarea>
+                    </div>
+                    
+                    <div class="form-group2">
                         <label for="vehicle_info">Vehicle Information:</label>
-                        <textarea id="vehicle_info" name="vehicle_info" rows="4" readonly><?php echo $subject['vehicle_info']; ?></textarea>
+                        <textarea id="vehicle_info" name="vehicle_info" rows="3" readonly><?php echo $subject['vehicle_info']; ?></textarea>
                     </div>
 
                     <div class="form-group">
-                        <label for="place_of_work">Place of Work:</label>
-                        <input type="text" id="place_of_work" name="place_of_work" value="<?php echo $subject['place_of_work']; ?>" readonly>
-                    </div>
-
-                    <div class="form-group">
-                        <h3>Lawyer Information:</h3>
+                        <h3>Lawyer Information</h3>
                         <div class="sub-form-group">
                             <label for="lawyer-name">Lawyer Name:</label>
                             <input type="text" id="lawyer-name" name="lawyer-name" value="<?php echo $subject['lawyer_name']; ?>" readonly>
                         </div>
 
                         <div class="sub-form-group">
-                            <label for="lawyer-email">Lawyer Email:</label>
+                            <label for="lawyer-email">Lawyer Email</label>
                             <input type="email" id="lawyer-email" name="lawyer-email" value="<?php echo $subject['lawyer_email']; ?>" readonly>
+                        </div>
+
+                       <div class="sub-form-group">
+                            <label for="lawyer-ph">Lawyer Phone Number</label>
+                            <input type="tel" id="lawyer-ph" name="lawyer-ph" value="<?php echo $subject['lawyer_ph']; ?>" readonly>
                         </div>
                     </div>
 
                     <div class="form-group">
-                        <label for="notes">Notes:</label>
+                        <label for="notes">Notes</label>
                         <textarea id="notes" name="notes" rows="4" readonly><?php echo $subject['notes']; ?></textarea>
                     </div>
 
                     <div class="form-group">
-                        <label for="organization_tags">Organization Tags:</label>
+                        <label for="organization_tags">Organization Tags</label>
                         <input type="text" id="organization_tags" name="organization_tags" readonly>
                     </div>
 
                     <div class="form-group">
                         <label for="media">Additional Media</label>
-                        <input type="file" id="media" name="media">
+                        <input type="file" id="media" name="media" style="width: 35%;" multiple disabled>
                     </div>
+
+                    <div class="form-group1">
+                        <label for="ud1">Field 1</label>
+                        <input type="ud1" id="ud1" name="ud1" value="<?php echo $subject['ud1']; ?>" readonly>
+                    </div> 
+                    
+                    <div class="form-group2">
+                        <label for="ud2">Field 2</label>
+                        <input type="ud2" id="ud2" name="ud2" value="<?php echo $subject['ud2']; ?>" readonly>
+                    </div>
+                    
+                    <div class="form-group1">
+                        <label for="ud3"> Field 3</label>
+                        <input type="ud3" id="ud3" name="ud3" value="<?php echo $subject['ud3']; ?>" readonly>
+                    </div>
+                    
+                    <div class="form-group2">
+                        <label for="ud4">Field 4</label>
+                        <input type="ud4" id="ud4" name="ud4" value="<?php echo $subject['ud4']; ?>" readonly>
+                    </div>
+
 
                     <div class="form-group">
                         <label for="related_cases">Associated Cases:</label>
-                        <select id="related_cases" name="related_cases[]" class="js-example-basic-multiple-cases" multiple="multiple" style="width: 100%;">
+                        <select id="related_cases" name="related_cases[]" class="js-example-basic-multiple-cases" multiple="multiple" style="width: 44%;" disabled>
                             <?php foreach ($assoc_cases as $case) { ?>
                                 <option value="<?php echo $case['title']; ?>" selected><?php echo $case['title']; ?></option>
                             <?php } ?>
                         </select>
                     </div>
 
-                    <div class="form-group">
+                    <div class="form-group1">
                         <label for="day_modified"><span class="required">*</span>Date Modified:</label>
                         <input type="datetime-local" id="day_modified" name="day_modified" value="<?php echo $subject['day_modified']; ?>" readonly>
                     </div>
 
-                    <div class="form-group">
+                    <div class="form-group2">
                         <label for="modified_by"><span class="required">*</span>Modified By:</label>
                         <input type="text" id="modified_by" name="modified_by" value="<?php echo $subject['mod_agent']; ?>" readonly>
-                    </div>
+                    </div><br><br>
                     
                     <div class="form-group">
                         <a href="edit_subject.php?subject_id=<?php echo $subject['subject_id']; ?>" class="edit-btn">Edit</a>

@@ -31,6 +31,18 @@
     $case_details = $result_case_details->fetch_all(MYSQLI_ASSOC);
   } 
 
+  // get names of associated clients
+  $assoc_clients = [];
+  $query_assoc_clients = "SELECT client_name 
+  FROM clients
+  LEFT JOIN case_client ON clients.client_id = case_client.client_id
+  WHERE case_client.case_id ='$case_id'
+  GROUP BY case_client.client_id";
+  $result_assoc_clients = $conn->query($query_assoc_clients);
+  if ($result_assoc_clients) {
+    $assoc_clients = $result_assoc_clients->fetch_all(MYSQLI_ASSOC);
+  }
+
   // get names of associated subject
   $assoc_subjects = [];
   $query_assoc_subjects = "SELECT subject_name 
@@ -58,13 +70,19 @@
   // if submit button is clicked
   if ($_POST) {
     $case_id = $_POST['case_id'];
-    $title = $_POST['title'];
-    $purpose = $_POST['purpose'];
+    $title = preg_replace("/'/", "", $_POST['title']);
+    $purpose = preg_replace("/'/", "", $_POST['purpose']);
     $status = $_POST['status'];
-    $invoice = $_POST['invoice_info'];
+    $invoice = preg_replace("/'/", "", $_POST['invoice_info']);
     $assoc_client = $_POST['related_client'];
     // regex out single quotes from notes...
     $notes = preg_replace("/'/", "", $_POST['notes']);
+
+    $ud1 = preg_replace("/'/", "", $_POST['ud1']);
+    $ud2 = preg_replace("/'/", "", $_POST['ud2']);
+    $ud3 = preg_replace("/'/", "", $_POST['ud3']);
+    $ud4 = preg_replace("/'/", "", $_POST['ud4']);
+
     $modified_by = $new_agent_id;
     $day_modified = $new_date;
 
@@ -76,7 +94,11 @@
     invoice = '$invoice',
     notes = '$notes',
     modified_by = '$modified_by',
-    day_modified = '$day_modified'
+    day_modified = '$day_modified',
+    ud1 = '$ud1',
+    ud2 = '$ud2',
+    ud3 = '$ud3',
+    ud4 = '$ud4'
     WHERE case_id = '$case_id'";
 
     $conn->query($update_case_details); 
@@ -86,15 +108,17 @@
     $conn->query($delete_old_client);    
 
     // Insert into case_client table
-    $related_client = $_POST['related_client'];
-    $query = "SELECT client_id FROM clients WHERE client_name = '$related_client'";
-    $result = $conn->query($query);
-    if ($result->num_rows > 0) {
-      $client_id = $result->fetch_assoc()['client_id'];
-    }
-    $insert_case_client = "INSERT INTO case_client(case_id, client_id) VALUES ('$case_id', '$client_id')";
-    if ($conn->query($insert_case_client) !== TRUE) {
-      echo "Error inserting into case_client";
+    $related_clients = $_POST['related_clients'];
+    foreach ($related_clients as $related_client) {
+      $query = "SELECT client_id FROM clients WHERE client_name = '$related_client'";
+      $result = $conn->query($query);
+      if ($result->num_rows > 0) {
+        $client_id = $result->fetch_assoc()['client_id'];
+      }
+      $insert_case_client = "INSERT INTO case_client(case_id, client_id) VALUES ('$case_id', '$client_id')";
+      if ($conn->query($insert_case_client) !== TRUE) {
+        echo "Error inserting into case_client";
+      }
     }
 
     // delete old subject entries
@@ -172,23 +196,23 @@
       <form action="edit_case.php" method="POST" class="case-form" enctype="multipart/form-data">
         <?php if (!empty($case_details)) {
         $case = $case_details[0]; ?>
-          <div class="form-group">
-            <label for="case_id"><span class="required">*</span>Case ID:</label>
+          <div class="form-group1">
+            <label for="case_id"><span class="required">*</span>Case ID</label>
             <input type="text" id="case_id" name="case_id" value="<?php echo $case_id ?>" readonly>
           </div>
-          <div class="form-group">
-              <label for="title"><span class="required">*</span>Title:</label>
+          <div class="form-group2">
+              <label for="title"><span class="required">*</span>Title</label>
               <input type="text" id="title" name="title" value="<?php echo $case['title']; ?>">
           </div>
 
           <div class="form-group">
-              <label for="purpose">Purpose of Case:</label>
+              <label for="purpose">Purpose of Case</label>
               <textarea id="purpose" name="purpose" rows="4"><?php echo $case['purpose']; ?></textarea>
           </div>
 
           <div class="form-group">
-              <label for="status"><span class="required">*</span>Status:</label>
-              <select id="status" name="status" style="width: 25%; font-size: large;" required>
+              <label for="status"><span class="required">*</span>Status</label>
+              <select id="status" name="status" style="width: 10%; font-size: 19px; font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;" required>
                   <option value="Open"<?php if ($case['status'] === 'Open') echo ' selected'; ?>>Open</option>
                   <option value="Closed"<?php if ($case['status'] === 'Closed') echo ' selected'; ?>>Closed</option>
                   <option value="Pending"<?php if ($case['status'] === 'Pending') echo ' selected'; ?>>Pending</option>
@@ -196,30 +220,57 @@
           </div>
 
           <div class="form-group">
-              <label for="invoice_info">Invoice Information:</label>
+              <label for="invoice_info">Invoice Information</label>
               <textarea id="invoice_info" name="invoice_info" rows="4"><?php echo $case['invoice']; ?></textarea>
           </div>
 
           <div class="form-group">
-              <label for="notes">Notes:</label>
+              <label for="notes">Notes</label>
               <textarea id="notes" name="notes" rows="4"><?php echo $case['notes']; ?></textarea>
           </div>
 
           <div class="form-group">
               <label for="media">Additional Media:</label>
-              <input type="file" id="media" name="media">
+              <input type="file" id="media" name="media" style="width: 35%;" multiple>
           </div>
 
           <div class="form-group">
-              <label for="related_client"><span class="required">*</span>Associated Client:</label>
-              <select id="related_client" name="related_client" class="js-example-basic-single" style="width: 100%;" required>
+            <label for="organization_tags">Organization Tags</label>
+            <input type="text" id="organization_tags" name="organization_tags">
+          </div>
+
+          <div class="form-group1">
+            <label for="ud1">Field 1</label>
+            <input type="ud1" id="ud1" name="ud1" value="<?php echo $case['ud1']; ?>">
+          </div> 
+        
+          <div class="form-group2">
+            <label for="ud2">Field 2</label>
+            <input type="ud2" id="ud2" name="ud2" value="<?php echo $case['ud2']; ?>">
+          </div>
+        
+          <div class="form-group1">
+            <label for="ud3"> Field 3</label>
+            <input type="ud3" id="ud3" name="ud3" value="<?php echo $case['ud3']; ?>">
+          </div>
+        
+          <div class="form-group2">
+            <label for="ud4">Field 4</label>
+            <input type="ud4" id="ud4" name="ud4" value="<?php echo $case['ud4']; ?>">
+          </div>
+
+          <div class="form-group">
+              <label for="related_clients"><span class="required">*</span>Associated Client</label>
+              <select id="related_clients" name="related_clients[]" class="js-example-basic-single" style="width: 43%;" multiple="multiple">
                   <option value=""></option>
-                  <option value="<?php echo $case['assoc_client']; ?>" selected><?php echo $case['assoc_client']; ?></option>
+                  <?php foreach ($assoc_clients as $client) { ?>
+                    <option value="<?php echo $client['client_name']; ?>" selected><?php echo $client['client_name']; ?></option>
+                  <?php } ?>
               </select>
           </div>
 
-          <div class="form-group">
-              <label for="related_subjects">Associated Subjects:</label>
+          <div class="form-group1">
+              <label for="related_subjects">Associated Subjects</label>
               <select id="related_subjects" name="related_subjects[]" class="js-example-basic-multiple-subjects" multiple="multiple" style="width: 100%;">
                   <option value=""></option>
                   <?php foreach ($assoc_subjects as $subject) { ?>
@@ -228,8 +279,8 @@
               </select>
           </div>
 
-          <div class="form-group">
-              <label for="related_agents">Associated Agents:</label>
+          <div class="form-group2">
+              <label for="related_agents">Associated Agents</label>
               <select id="related_agents" name="related_agents[]" class="js-example-basic-multiple-agents" multiple="multiple" style="width: 100%;" >
                   <option value=""></option>
                   <?php foreach ($assoc_agents as $agent) { ?>
@@ -238,18 +289,18 @@
               </select>
           </div>
 
-          <div class="form-group">
-            <label for="day_modified"><span class="required">*</span>Date Modified:</label>
+          <div class="form-group1">
+            <label for="day_modified"><span class="required">*</span>Date Modified</label>
             <input type="datetime-local" id="day_modified" name="day_modified" value="<?php echo $new_date; ?>" readonly>
           </div>
 
-          <div class="form-group">
-            <label for="modified_by"><span class="required">*</span>Modified By:</label>
+          <div class="form-group2">
+            <label for="modified_by"><span class="required">*</span>Modified By</label>
             <input type="text" id="modified_by" name="modified_by" value="<?php echo $name; ?>" readonly>
           </div>
 
           <div class="form-group">
-            <button type="submit" class="submit-btn">Submit</button>
+            <button type="submit" class="submit-btn">Submit Changes</button>
             <a href="dashboard.php" class="discard-btn" onclick="return confirm('Are you sure you want to discard? No data will be saved.')">Discard</a>
           </div>
         <?php } ?>
@@ -262,7 +313,7 @@
         // single client input field
         $('.js-example-basic-single').select2({
           placeholder: 'Select a client...',
-          allowClear: true, 
+          maximumSelectionLength: 1,
           data: <?php echo json_encode($client_names); ?>,
         });
 

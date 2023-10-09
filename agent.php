@@ -95,38 +95,38 @@
   <div id="content" class="content">
     <h2>Add an Agent</h2>
     <form action="agent.php" method="POST" class="agent-form">
-      <div class="form-group">
-        <label for="agent_id"><span class="required">*</span>Agent ID:</label>
+      <div class="form-group1">
+        <label for="agent_id"><span class="required">*</span>Agent ID</label>
         <input type="text" id="agent_id" name="agent_id" value="<?php echo $unique_agent_id ?>" readonly>
       </div>
 
-      <div class="form-group">
-        <label for="badge_number">Badge:</label>
+      <div class="form-group2">
+        <label for="badge_number">Badge</label>
         <input type="text" id="badge_number" name="badge_number">
       </div>
 
-      <div class="form-group">
-        <label for="name"><span class="required">*</span>Name:</label>
+      <div class="form-group1">
+        <label for="name"><span class="required">*</span>Name</label>
         <input type="text" id="name" name="name" required>
       </div>
 
-      <div class="form-group">
-        <label for="email">Email:</label>
+      <div class="form-group2">
+        <label for="email">Email</label>
         <input type="email" id="email" name="email">
       </div>
 
-      <div class="form-group">
-        <label for="username"><span class="required">*</span>Username:</label>
+      <div class="form-group1">
+        <label for="username"><span class="required">*</span>Username</label>
         <input type="text" id="username" name="username" required>
       </div>
 
-      <div class="form-group">
+      <div class="form-group2">
         <label for="email"><span class="required">*</span>Password:</label>
         <input type="text" id="password" name="password" required>
       </div>
 
       <div class="form-group">
-        <label for="role"><span class="required">*</span>Role:</label>
+        <label for="role"><span class="required">*</span>Role</label>
         <select id="role" name="role" style="width: 25%; font-size: large;" readonly>
           <option value="agent">agent</option>
           <option value="admin">admin</option>
@@ -134,28 +134,28 @@
       </div>
 
       <div class="form-group">
-        <label for="organization_tags">Organization Tags:</label>
+        <label for="organization_tags">Organization Tags</label>
         <input type="text" id="organization_tags" name="organization_tags">
       </div>
 
       <div class="form-group">
-        <label for="related_cases">Associated Cases:</label>
-        <select id="related_cases" name="related_cases[]" class="js-example-basic-multiple-cases" multiple="multiple" style="width: 100%;"></select>
+        <label for="related_cases">Associated Cases</label>
+        <select id="related_cases" name="related_cases[]" class="js-example-basic-multiple-cases" multiple="multiple" style="width: 43%;"></select>
       </div>
 
-      <div class="form-group">
-        <label for="day_modified"><span class="required">*</span>Date Modified:</label>
+      <div class="form-group1">
+        <label for="day_modified"><span class="required">*</span>Date Modified</label>
         <input type="datetime-local" id="day_modified" name="day_modified" value="<?php echo $date ?>" readonly>
       </div>
 
-      <div class="form-group">
-        <label for="modified_by"><span class="required">*</span>Modified By:</label>
+      <div class="form-group2">
+        <label for="modified_by"><span class="required">*</span>Modified By</label>
         <input type="text" id="modified_by" name="modified_by" value="<?php echo $name ?>" readonly>
       </div>
       
       <div class="form-group">
         <button type="submit" class="submit-btn">Submit</button>
-        <a href="dashboard.php" class="delete-btn" onclick="return confirm('Are you sure you want to discard? No data will be saved.')">Discard</a>
+        <a href="admin.php" class="discard-btn" onclick="return confirm('Are you sure you want to discard? No data will be saved.')">Discard</a>
       </div>
     </form>
   </div>

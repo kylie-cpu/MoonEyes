@@ -20,7 +20,7 @@
   WHERE cases.status = 'Open' 
   AND cases.case_id IN (SELECT case_agent.case_id FROM case_agent WHERE agent_id = '$user_id')
   GROUP BY cases.case_id
-  LIMIT 5";
+  LIMIT 30";
   $result_your_open_cases = $conn->query($query);
   $your_open_cases = $result_your_open_cases->fetch_all(MYSQLI_ASSOC);
 
@@ -31,7 +31,7 @@
   LEFT JOIN agents ON case_agent.agent_id = agents.agent_id
   GROUP BY cases.case_id
   ORDER BY cases.day_modified DESC
-  LIMIT 5";
+  LIMIT 30";
   $result_recent_cases = $conn->query($query_recent_cases);
   $recent_cases = $result_recent_cases->fetch_all(MYSQLI_ASSOC);
 
@@ -43,7 +43,7 @@
   LEFT JOIN lawyers ON clients.lawyer = lawyers.lawyer_id
   GROUP BY clients.client_id
   ORDER BY clients.day_modified DESC
-  LIMIT 5";
+  LIMIT 30";
   $result_recent_clients = $conn->query($query_recent_clients);
   $recent_clients = $result_recent_clients->fetch_all(MYSQLI_ASSOC);
 
@@ -55,7 +55,7 @@
   LEFT JOIN lawyers ON subjects.lawyer = lawyers.lawyer_id
   GROUP BY subjects.subject_id
   ORDER BY subjects.day_modified DESC
-  LIMIT 5";
+  LIMIT 30";
   $result_recent_subjects = $conn->query($query_recent_subjects);
   $recent_subjects = $result_recent_subjects->fetch_all(MYSQLI_ASSOC);
 ?>
@@ -73,88 +73,96 @@
     <div id="content">
       <h1><?php echo $name?>'s Dashboard</h1>
       <h2>Your Open Cases: <?php echo $num_open?> </h2>
-      <table>
-        <tr>
-          <th>Case ID</th>
-          <th>Title</th>
-          <th>Purpose</th>
-          <th>Associated Agents</th>
-          <th>Status</th>
-        </tr>
-        <?php foreach ($your_open_cases as $case): ?>
+      <div id="scroll-wrapper">
+        <table>
           <tr>
-            <td><a href="case_details.php?case_id=<?php echo $case['case_id']; ?>"><?php echo $case['case_id']; ?></a></td>
-            <td><?php echo $case['title']; ?></td>
-            <td><?php echo $case['purpose']; ?></td>
-            <td><?php echo $case['assoc_agents']; ?></td>
-            <td class="<?php echo ($case['status'] === 'Open') ? 'open-bg' : (($case['status'] === 'Closed') ? 'closed-bg' : 'pending-bg'); ?>">
-              <?php echo $case['status']; ?>
-            </td>
+            <th>Case ID</th>
+            <th>Title</th>
+            <th>Purpose</th>
+            <th>Associated Agents</th>
+            <th>Status</th>
           </tr>
-        <?php endforeach; ?>
-      </table>
+          <?php foreach ($your_open_cases as $case): ?>
+            <tr> 
+              <td><a href="case_details.php?case_id=<?php echo $case['case_id']; ?>"><?php echo $case['case_id']; ?></a></td>
+              <td><?php echo $case['title']; ?></td>
+              <td><?php echo $case['purpose']; ?></td>
+              <td><?php echo $case['assoc_agents']; ?></td>
+              <td class="<?php echo ($case['status'] === 'Open') ? 'open-bg' : (($case['status'] === 'Closed') ? 'closed-bg' : 'pending-bg'); ?>">
+                <?php echo $case['status']; ?>
+              </td>
+            </tr>
+          <?php endforeach; ?>
+        </table>
+      </div>
       
-      <h2>Recent Entries</h2>
+      <h2>New Entries</h2>
 
-      <h3>Recent Cases</h3>
-      <table>
-        <tr>
-          <th>Case ID</th>
-          <th>Title</th>
-          <th>Purpose</th>
-          <th>Associated Agents</th>
-          <th>Status</th>
-        </tr>
-        <?php foreach ($recent_cases as $recent_case): ?>
+      <h3>Recently Added Cases</h3>
+      <div id="scroll-wrapper">
+        <table>
           <tr>
-            <td><a href="case_details.php?case_id=<?php echo $recent_case['case_id']; ?>"><?php echo $recent_case['case_id']; ?></a></td>
-            <td><?php echo $recent_case['title']; ?></td>
-            <td><?php echo $recent_case['purpose']; ?></td>
-            <td><?php echo $recent_case['assoc_agents']; ?></td>
-            <td class="<?php echo ($recent_case['status'] === 'Open') ? 'open-bg' : (($recent_case['status'] === 'Closed') ? 'closed-bg' : 'pending-bg'); ?>">
-              <?php echo $recent_case['status']; ?>
-            </td>
+            <th>Case ID</th>
+            <th>Title</th>
+            <th>Purpose</th>
+            <th>Associated Agents</th>
+            <th>Status</th>
           </tr>
-        <?php endforeach; ?>
-      </table>
+          <?php foreach ($recent_cases as $recent_case): ?>
+            <tr>
+              <td><a href="case_details.php?case_id=<?php echo $recent_case['case_id']; ?>"><?php echo $recent_case['case_id']; ?></a></td>
+              <td><?php echo $recent_case['title']; ?></td>
+              <td><?php echo $recent_case['purpose']; ?></td>
+              <td><?php echo $recent_case['assoc_agents']; ?></td>
+              <td class="<?php echo ($recent_case['status'] === 'Open') ? 'open-bg' : (($recent_case['status'] === 'Closed') ? 'closed-bg' : 'pending-bg'); ?>">
+                <?php echo $recent_case['status']; ?>
+              </td>
+            </tr>
+          <?php endforeach; ?>
+        </table>
+      </div>
 
-      <h3> Recent Clients</h3>
-      <table>
-        <tr>
-          <th>Client ID</th>
-          <th>Name</th>
-          <th>Email</th>
-          <th>Associated Cases</th>
-          <th>Lawyer</th> 
-        </tr>
-        <?php foreach ($recent_clients as $recent_client): ?>
+      <h3>Recently Added Clients</h3>
+      <div id="scroll-wrapper">
+        <table>
           <tr>
-            <td><a href="client_details.php?client_id=<?php echo $recent_client['client_id']; ?>"><?php echo $recent_client['client_id']; ?></a></td>
-            <td><?php echo $recent_client['client_name']; ?></td>
-            <td><?php echo $recent_client['email']; ?></td>
-            <td><?php echo $recent_client['assoc_cases']; ?></td>
-            <td><?php echo $recent_client['assoc_lawyer']; ?></td>
+            <th>Client ID</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Associated Cases</th>
+            <th>Lawyer</th> 
           </tr>
-        <?php endforeach; ?>
-      </table>
+          <?php foreach ($recent_clients as $recent_client): ?>
+            <tr>
+              <td><a href="client_details.php?client_id=<?php echo $recent_client['client_id']; ?>"><?php echo $recent_client['client_id']; ?></a></td>
+              <td><?php echo $recent_client['client_name']; ?></td>
+              <td><?php echo $recent_client['email']; ?></td>
+              <td><?php echo $recent_client['assoc_cases']; ?></td>
+              <td><?php echo $recent_client['assoc_lawyer']; ?></td>
+            </tr>
+          <?php endforeach; ?>
+        </table>
+      </div>
 
-      <h3>Recent Subjects</h3>
-      <table>
-        <tr>
-          <th>Subject ID</th>
-          <th>Name</th>
-          <th>Associated Cases</th>
-          <th>Lawyer</th>
-        </tr>
-        <?php foreach ($recent_subjects as $recent_subject): ?>
+      <h3>Recently Added Subjects</h3>
+      <div id="scroll-wrapper">
+        <table>
           <tr>
-            <td><a href="subject_details.php?subject_id=<?php echo $recent_subject['subject_id']; ?>"><?php echo $recent_subject['subject_id']; ?></a></td>
-            <td><?php echo $recent_subject['subject_name']; ?></td>
-            <td><?php echo $recent_subject['assoc_cases']; ?></td>
-            <td><?php echo $recent_subject['assoc_lawyer']; ?></td>
+            <th>Subject ID</th>
+            <th>Name</th>
+            <th>Associated Cases</th>
+            <th>Lawyer</th>
           </tr>
-        <?php endforeach; ?>
-      </table>
+          <?php foreach ($recent_subjects as $recent_subject): ?>
+            <tr>
+              <td><a href="subject_details.php?subject_id=<?php echo $recent_subject['subject_id']; ?>"><?php echo $recent_subject['subject_id']; ?></a></td>
+              <td><?php echo $recent_subject['subject_name']; ?></td>
+              <td><?php echo $recent_subject['assoc_cases']; ?></td>
+              <td><?php echo $recent_subject['assoc_lawyer']; ?></td>
+            </tr>
+          <?php endforeach; ?>
+        </table>
+      </div>
     </div>
   </body>
 </html> 
