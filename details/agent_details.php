@@ -2,27 +2,26 @@
 <?php
   session_start();
   $user = $_SESSION['user'];
-  $name = $user[0]['name'];
+  $name = $user['name'];
 
   // make sure user is an admin role
-  if ($_SESSION['user'][0]['role'] !== 'admin') {
-    header("Location: login-form.php");
+  if ($_SESSION['user']['role'] !== 'admin') {
+    header("Location: ../login/login-form.php");
     exit;
   }
 
   $added_agent_id = $_GET['agent_id'];
   // Initialize unique ID for subject & lawyer and also initizialize agent_id for modified_by field
-  $unique_agent_id = "AGENT-" . uniqid();
-  $agent_id = $user[0]['agent_id'];
+  $agent_id = $user['agent_id'];
 
-  include('database/connection.php');   
+  include('../database/connection.php');   
 
   // Create date for date modified field
   date_default_timezone_set('America/Detroit');
-  $date = date('Y-m-d H:i:s');
+  $new_date = date('Y-m-d H:i:s');
 
     // Populate dropdowns
-    include('dropdowns.php');
+    include('../included/dropdowns.php');
 
 
     // get agent details from agents
@@ -45,16 +44,17 @@
     if ($result_assoc_cases->num_rows > 0) {
         $assoc_cases = $result_assoc_cases->fetch_all(MYSQLI_ASSOC);
     }
+    
 
 ?>
 
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Add an Agent</title>
+    <title>Agent Details</title>
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-    <link rel="stylesheet" type="text/css" href="css/add.css">
-    <link rel="stylesheet" href="css/sidenav.css">
+    <link rel="stylesheet" type="text/css" href="../css/add.css">
+    <link rel="stylesheet" href="../css/sidenav.css">
   </head>
   <body>
     <!-- jQuery library -->
@@ -69,7 +69,7 @@
     }
   </style>
 
-  <?php include("sidenav.php"); ?>
+  <?php include("../nav/sidenav.php"); ?>
 
   <!-- Database submission form -->
   <div id="content" class="content">
@@ -79,32 +79,32 @@
          $agent = $agent_details[0];?>
             <div class="form-group1">
                 <label for="agent_id"><span class="required">*</span>Agent ID</label>
-                <input type="text" id="agent_id" name="agent_id" value="<?php echo $agent['agent_id']; ?>" readonly>
+                <input class="view-input" type="text" id="agent_id" name="agent_id" value="<?php echo $agent['agent_id']; ?>" readonly>
             </div>
 
             <div class="form-group2">
                 <label for="badge_number">Badge</label>
-                <input type="text" id="badge_number" name="badge_number" value="<?php echo $agent['badge_number']; ?>"readonly>
+                <input class="view-input" type="text" id="badge_number" name="badge_number" value="<?php echo $agent['badge_number']; ?>"readonly>
             </div>
 
             <div class="form-group1">
                 <label for="name"><span class="required">*</span>Name</label>
-                <input type="text" id="name" name="name" value="<?php echo $agent['name']; ?>" readonly>
+                <input class="view-input" type="text" id="name" name="name" value="<?php echo $agent['name']; ?>" readonly>
             </div>
 
             <div class="form-group2">
                 <label for="email">Email</label>
-                <input type="email" id="email" name="email" value="<?php echo $agent['email']; ?>"readonly>
+                <input class="view-input" type="email" id="email" name="email" value="<?php echo $agent['email']; ?>"readonly>
             </div>
 
             <div class="form-group1">
                 <label for="username"><span class="required">*</span>Username</label>
-                <input type="text" id="username" name="username" value="<?php echo $agent['username']; ?>" readonly>
+                <input class="view-input" type="text" id="username" name="username" value="<?php echo $agent['username']; ?>" readonly>
             </div>
 
             <div class="form-group2">
                 <label for="email"><span class="required">*</span>Password:</label>
-                <input type="text" id="password" name="password" value="<?php echo $agent['password']; ?>"readonly>
+                <input class="view-input" type="password" id="password" name="password" value="<?php echo $agent['agent_id']; ?>" readonly>
             </div>
 
             <div class="form-group">
@@ -113,11 +113,6 @@
                     <option value="agent"<?php if ($agent['role'] === 'agent')echo ' selected'; ?>>agent</option>
                     <option value="admin"<?php if ($agent['role'] === 'admin')echo ' selected'; ?>>admin</option>
                 </select>
-            </div>
-
-            <div class="form-group">
-                <label for="organization_tags">Organization Tags</label>
-                <input type="text" id="organization_tags" name="organization_tags" disabled>
             </div>
 
             <div class="form-group">
@@ -132,16 +127,16 @@
 
             <div class="form-group1">
                 <label for="day_modified"><span class="required">*</span>Date Modified</label>
-                <input type="datetime-local" id="day_modified" name="day_modified" value="<?php echo $agent['modified_at']; ?>" readonly>
+                <input class="view-input" type="datetime-local" id="day_modified" name="day_modified" value="<?php echo $new_date; ?>" readonly>
             </div>
 
             <div class="form-group2">
                 <label for="modified_by"><span class="required">*</span>Modified By</label>
-                <input type="text" id="modified_by" name="modified_by" value="<?php echo $agent['modified_by']; ?>" readonly>
+                <input class="view-input" type="text" id="modified_by" name="modified_by" value="<?php echo $name; ?>" readonly>
             </div><br><br>
 
             <div class="form-group">
-                <a href="edit_agent.php?client_id=<?php echo $agent['agent_id']; ?>" class="edit-btn">Edit</a>
+                <a href="../edit/edit_agent.php?agent_id=<?php echo $agent['agent_id']; ?>" class="edit-btn">Edit</a>
                 <a href=# onclick="window.print();" class="print-btn">Print/PDF</a>
             </div>
         <?php } ?>
@@ -153,7 +148,6 @@
       $(document).ready(function() {
         // cases input field
         $('.js-example-basic-multiple-cases').select2({
-          placeholder: 'Select cases...',
           data: <?php echo json_encode($case_titles); ?>,
         });
       });

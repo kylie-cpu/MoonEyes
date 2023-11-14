@@ -1,19 +1,19 @@
 <?php
     session_start();
     $user = $_SESSION['user'];
-    $name = $user[0]['name'];
+    $name = $user['name'];
 
     $subject_id = $_GET['subject_id'];
-    $new_agent_id = $user[0]['agent_id'];
+    $new_agent_id = $user['agent_id'];
 
-    include('database/connection.php');
+    include('../database/connection.php');
 
     // Create date for date modified field
     date_default_timezone_set('America/Detroit');
     $new_date = date('Y-m-d H:i:s');
 
     // Populate dropdowns
-    include('dropdowns.php');
+    include('../included/dropdowns.php');
 
     // get subject details from subjects
     $query_subject_details = "SELECT subjects.*, agents.name AS mod_agent, lawyers.lawyer_name AS lawyer_name, lawyers.lawyer_email AS lawyer_email, lawyers.lawyer_ph AS lawyer_ph
@@ -35,6 +35,23 @@
     GROUP BY cases.case_id";
     $result_assoc_cases = $conn->query($query_assoc_cases);
     $assoc_cases = $result_assoc_cases->fetch_all(MYSQLI_ASSOC);
+
+    // get names of associated TAGS
+    $query_assoc_tags = "SELECT name 
+    FROM tags
+    LEFT JOIN tag_assoc ON tags.tag_id = tag_assoc.tag_id
+    WHERE tag_assoc.assoc_id ='$subject_id'
+    GROUP BY tag_assoc.tag_id";
+    $result_assoc_tags = $conn->query($query_assoc_tags);
+    if ($result_assoc_tags) {
+        $assoc_tags = $result_assoc_tags->fetch_all(MYSQLI_ASSOC);
+    }
+
+    $query_assoc_files = "SELECT file_id, fileName FROM files WHERE entity_id = '$subject_id'";
+    $result_assoc_files = $conn->query($query_assoc_files);
+    if ($result_assoc_files) {
+        $assoc_files = $result_assoc_files->fetch_all(MYSQLI_ASSOC);
+    }
 
     // if submit button is clicked
     if ($_POST) {
@@ -106,8 +123,37 @@
         $insert_lawyer_details = "INSERT INTO lawyers (lawyer_id, lawyer_name, lawyer_email, lawyer_ph) VALUES ('$lawyer_id', '$lawyer_name', '$lawyer_email', '$lawyer_ph')";
         $conn->query($insert_lawyer_details);
 
+        
+        // update tags table 
+        $delete_tags = "DELETE FROM tag_assoc WHERE assoc_id = '$client_id'";
+        $conn->query($delete_tags);
+
+        $related_tags = $_POST['related_tags'];
+        foreach ($related_tags as $related_tag) {
+          $query = "SELECT tag_id FROM tags WHERE name = '$related_tag'";
+          $result = $conn->query($query);
+          if ($result->num_rows > 0) {
+            $tag_id = $result->fetch_assoc()['tag_id'];
+          }
+          $insert_tag_assoc = "INSERT INTO tag_assoc(tag_id, assoc_id) VALUES ('$tag_id', '$subject_id')";
+          if ($conn->query($insert_tag_assoc) !== TRUE) {
+            echo "Error inserting into tag_assoc";
+          }
+        }
+
+        // delete old file assoc from DB if selected 
+        $selected_files = $_POST['selected_files'];
+        $entity_id = $subject_id;
+        foreach ($selected_files as $selected_file) {
+        include '../included/delete_file.php';
+        }
+
+        // upload new files
+        $entity_id = $subject_id;
+        include '../included/upload.php';
+
         // Redirect back to dashboard after submission
-        header("Location: dashboard.php"); 
+        header("Location: ../main/dashboard.php"); 
         exit;
     }
 ?>
@@ -118,8 +164,8 @@
         <title>Edit Subject</title>
         <!-- Select 2 CSS -->
         <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-        <link rel="stylesheet" type="text/css" href="css/add.css">
-        <link rel="stylesheet" href="css/sidenav.css">
+        <link rel="stylesheet" type="text/css" href="../css/add.css">
+        <link rel="stylesheet" href="../css/sidenav.css">
     </head>
     <body>
         <!-- jQuery lib -->
@@ -134,17 +180,17 @@
             }
         </style>
 
-        <?php include("sidenav.php"); ?>
+        <?php include("../nav/sidenav.php"); ?>
 
         <!-- Database submission form -->
         <div id="content" class="content">
             <h2> Edit <?php echo $subject_id ?> </h2>
-            <form action="edit_subject.php" method="POST" class="subject-form">
+            <form action="edit_subject.php" method="POST" class="subject-form" enctype="multipart/form-data">
                 <?php if (!empty($subject_details)) {
                 $subject = $subject_details[0]; ?>
                     <div class="form-group1">
                         <label for="subject_id"><span class="required">*</span>Subject ID</label>
-                        <input type="text" id="subject_id" name="subject_id" value="<?php echo $subject['subject_id']; ?>" readonly>
+                        <input class="view-input" type="text" id="subject_id" name="subject_id" value="<?php echo $subject['subject_id']; ?>" readonly>
                     </div>
 
                     <div class="form-group2">
@@ -215,38 +261,62 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="organization_tags">Organization Tags</label>
-                        <input type="text" id="organization_tags" name="organization_tags">
+                        <label for="related_tags">Organizational Tags</label>
+                        <select id="related_tags" name="related_tags[]" class="multiple-tags" style="width: 100%;" multiple="multiple">
+                        <?php foreach ($assoc_tags as $tag) { ?>
+                            <option value="<?php echo $tag['name']; ?>" selected><?php echo $tag['name']; ?></option>
+                        <?php } ?>
+                        </select>
                     </div>
 
                     <div class="form-group">
                         <label for="media">Additional Media</label>
-                        <input type="file" id="media" name="media" style="width: 35%;" multiple>
+                        <input type="file" id="media" name="media[]" style="width: 35%;" multiple>
                     </div>
+                    <?php 
+                        if ($result_assoc_files->num_rows > 0) {
+                            echo "<h3>Attached Files:</h3>";
+                            echo "<p class='remove-message'>Select any files you'd like to REMOVE by clicking the checkbox to the left of the file name. All selected files will be deleted upon hitting submit. </p>";
+                            echo "<ul>";
+                            foreach ($assoc_files as $file) {
+                                $file_id = $file['file_id'];
+                                $fileName = $file['fileName'];
+                                $fileURL = "../included/download.php?file_id=" . $file_id; // Link to a script that handles file download
+                                echo "<li><input type='checkbox' name='selected_files[]' class='file-checkbox' value=$fileName > <a href='$fileURL'>$fileName</a></li>";
+                            }
+                            echo "</ul>";
+                    
+                        } else {
+                            echo "<ul>";
+                            echo "No attached files for this subject.";
+                            echo "</ul>";
+                        }
+                    ?>
 
                     <div class="form-group1">
                         <label for="ud1">Field 1</label>
-                        <input type="ud1" id="ud1" name="ud1" value="<?php echo $subject['ud1']; ?>">
+                        <input type="text" id="ud1" name="ud1" value="<?php echo $subject['ud1']; ?>">
                     </div> 
                     
                     <div class="form-group2">
                         <label for="ud2">Field 2</label>
-                        <input type="ud2" id="ud2" name="ud2" value="<?php echo $subject['ud2']; ?>">
+                        <input type="text" id="ud2" name="ud2" value="<?php echo $subject['ud2']; ?>">
                     </div>
                     
                     <div class="form-group1">
                         <label for="ud3"> Field 3</label>
-                        <input type="ud3" id="ud3" name="ud3" value="<?php echo $subject['ud3']; ?>">
+                        <input type="text" id="ud3" name="ud3" value="<?php echo $subject['ud3']; ?>">
                     </div>
                     
                     <div class="form-group2">
                         <label for="ud4">Field 4</label>
-                        <input type="ud4" id="ud4" name="ud4" value="<?php echo $subject['ud4']; ?>" >
+                        <input type="text" id="ud4" name="ud4" value="<?php echo $subject['ud4']; ?>" >
                     </div>
 
                     <div class="form-group">
                         <label for="related_cases">Associated Cases:</label>
                         <select id="related_cases" name="related_cases[]" class="js-example-basic-multiple-cases" multiple="multiple" style="width: 44%;">
+                        <option value=""></option>
                             <?php foreach ($assoc_cases as $case) { ?>
                                 <option value="<?php echo $case['title']; ?>" selected><?php echo $case['title']; ?></option>
                             <?php } ?>
@@ -255,18 +325,18 @@
 
                     <div class="form-group1">
                         <label for="day_modified"><span class="required">*</span>Date Modified:</label>
-                        <input type="datetime-local" id="day_modified" name="day_modified" value="<?php echo $subject['day_modified']; ?>" readonly>
+                        <input class="view-input" type="datetime-local" id="day_modified" name="day_modified" value="<?php echo $subject['day_modified']; ?>" readonly>
                     </div>
 
                     <div class="form-group2">
                         <label for="modified_by"><span class="required">*</span>Modified By:</label>
-                        <input type="text" id="modified_by" name="modified_by" value="<?php echo $subject['mod_agent']; ?>" readonly>
+                        <input class="view-input" type="text" id="modified_by" name="modified_by" value="<?php echo $subject['mod_agent']; ?>" readonly>
                     </div>
                     
 
                     <div class="form-group">
                         <button type="submit" class="submit-btn">Submit Changes</button>
-                        <a href="dashboard.php" class="discard-btn" onclick="return confirm('Are you sure you want to discard? No data will be saved.')">Discard</a>
+                        <a class="discard-btn" href='delete.php?entity_type=subject&entity_id=<?php echo $subject_id?>' onclick="return confirm('Are you sure you want to delete this entry from the entire database? This action is irreversible.')">Delete Entity</a>
                     </div>
                 <?php } ?>
             </form>
@@ -279,6 +349,12 @@
                 $('.js-example-basic-multiple-cases').select2({
                     placeholder: 'Select cases...',
                     data: <?php echo json_encode($case_titles); ?>,
+                });
+
+                // multiple tags input field
+                $('.multiple-tags').select2({
+                    placeholder: 'Select tags...',
+                    data: <?php echo json_encode($tag_names); ?>,
                 });
             });
         </script>

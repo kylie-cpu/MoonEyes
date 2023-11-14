@@ -3,6 +3,7 @@ body {
   color: #000;
   margin: 0;
   padding: 0;
+  background-color: rgb(252, 252, 252);
 }
 
 .content {
@@ -16,12 +17,13 @@ body {
 .client-form,
 .subject-form,
 .case-form,
-.agent-form {
-  background-color: rgba(255, 255, 255, 0.466);
+.agent-form,
+.tag-form {
+  background-color: rgba(238, 238, 238, 0.404);
   width: 80%;
   border-radius: 8px;
   padding: 20px 40px;
-  box-shadow: 0 10px 25px rgba(92, 99, 105, .2);
+  box-shadow: rgba(50, 50, 93, 0.25) 0px 50px 100px -20px, rgba(0, 0, 0, 0.3) 0px 30px 60px -30px, rgba(10, 37, 64, 0.35) 0px -2px 6px 0px inset;
   margin-bottom: 50px;
 }
 
@@ -77,15 +79,26 @@ h3 {
   padding-right: 5%;
 }
 
-input,
-textarea {
+input[type="text"], input[type="file"], input[type="password"], input[type="email"], input[type="tel"],
+textarea, select {
   width: 100%;
   padding: 10px;
-  border: 1px solid #747474;
+  border: 1px solid #808080;
   border-radius: 5px;
   font-size: 16px;
   font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
-  background-color: rgba(230, 228, 228, 0.466);
+  background-color: rgb(255, 255, 255);
+  box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
+}
+
+.view-input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #808080;
+  border-radius: 5px;
+  font-size: 16px;
+  font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+  background-color: rgba(206, 203, 203, 0.486) !important;
 }
 
 .submit-btn {
@@ -99,6 +112,7 @@ textarea {
   margin-top: 10px;
   font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
   text-decoration: none;
+  box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
 }
 
 .discard-btn {
@@ -114,6 +128,7 @@ textarea {
   font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
   background-color: #dc3545;
   text-decoration: none;
+  box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
 }
 
 .edit-btn {
@@ -127,6 +142,7 @@ textarea {
   background-color: #dc8035;
   font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
   text-decoration: none;
+  box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
 }
 
 .print-btn {
@@ -141,6 +157,7 @@ textarea {
   background-color: #57a049;
   margin-left: 10px;
   text-decoration: none;
+  box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
 }
 
 .required {
@@ -154,6 +171,13 @@ textarea {
 .discard-btn:hover,
 .print-btn:hover{
   opacity: 0.8;
+}
+
+
+.remove-message {
+  color: rgb(255, 0, 0); 
+  font-weight: bold; 
+  font-size: 15px; 
 }
 
 /* Print Format */
@@ -181,11 +205,12 @@ textarea {
   .client-form,
   .subject-form,
   .case-form,
-  .agent-form {
+  .agent-form
+  .tag-form {
     background-color: white;
     border-radius: 8px;
     box-shadow: none !important;
-    width: 100%  !important;
+    width: 90%  !important;
   }
 
   .form-group {
@@ -222,11 +247,12 @@ textarea {
   input,
   textarea {
     padding: 5px;
-    border: none;
+    border: 2px rgb(153, 153, 153) !important;
     border-radius: 5px;
     font-size: 13px;
     font-family: Arial;
     background-color: rgb(255, 255, 255);
+    box-shadow: none !important;
   }
 
   .print-btn {
