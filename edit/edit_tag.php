@@ -7,7 +7,7 @@ if (!isset($_SESSION['user'])) {
 $user = $_SESSION['user'];
 $name = $user['name'];
 
-$tag_id = $_GET['tag_id']; // Assuming you have a tag_id in the URL to identify the tag to edit
+$tag_id = $_GET['tag_id'];
 $new_agent_id = $user['agent_id'];
 
 include('../database/connection.php');
@@ -61,62 +61,67 @@ if ($_POST) {
     $day_modified = $new_date;
     $modified_by = $new_agent_id;
 
-    // Update the tags table
-    $update_tag = "UPDATE tags SET name = '$name', day_modified = '$day_modified', modified_by = '$modified_by' WHERE tag_id = '$tag_id'";
+    // Update the tags table with prepared statement
+    $update_tag = $conn->prepare("UPDATE tags SET name = ?, day_modified = ?, modified_by = ? WHERE tag_id = ?");
+    $update_tag->bind_param("ssss", $name, $day_modified, $modified_by, $tag_id);
 
-    if ($conn->query($update_tag) !== TRUE) {
-        echo "Error updating tag";
+    if (!$update_tag->execute()) {
+        echo "Error updating tag: " . $update_tag->error;
+        exit();
     }
 
     // Clear existing associations
-    $delete_old_associations = "DELETE FROM tag_assoc WHERE tag_id = '$tag_id'";
-    $conn->query($delete_old_associations);
+    $delete_old_associations = $conn->prepare("DELETE FROM tag_assoc WHERE tag_id = ?");
+    $delete_old_associations->bind_param("s", $tag_id);
+    $delete_old_associations->execute();
 
-    // Insert associated data into tag_assoc
+    // Insert associated data into tag_assoc with prepared statements
+    $insert_tag_assoc = $conn->prepare("INSERT INTO tag_assoc(tag_id, assoc_id) VALUES (?, ?)");
+    $insert_tag_assoc->bind_param("ss", $tag_id, $assoc_id);
+
     $assoc_clients = $_POST['assoc_clients'];
-
     foreach ($assoc_clients as $assoc_client) {
         // Insert into tag_assoc for clients
-        $query = "SELECT client_id FROM clients WHERE client_name = '$assoc_client'";
-        $result = $conn->query($query);
+        $query = $conn->prepare("SELECT client_id FROM clients WHERE client_name = ?");
+        $query->bind_param("s", $assoc_client);
+        $query->execute();
+        $result = $query->get_result();
         if ($result->num_rows > 0) {
             $client_id = $result->fetch_assoc()['client_id'];
-            $insert_tag_assoc = "INSERT INTO tag_assoc(tag_id, assoc_id) VALUES ('$tag_id', '$client_id')";
-            if ($conn->query($insert_tag_assoc) !== TRUE) {
-                echo "Error inserting into tag_assoc";
-            }
+            $assoc_id = $client_id;
+            $insert_tag_assoc->execute();
         }
     }
 
     $assoc_cases = $_POST['assoc_cases'];
     foreach ($assoc_cases as $assoc_case) {
         // Insert into tag_assoc for cases
-        $query = "SELECT case_id FROM cases WHERE title = '$assoc_case'";
-        $result = $conn->query($query);
+        $query = $conn->prepare("SELECT case_id FROM cases WHERE title = ?");
+        $query->bind_param("s", $assoc_case);
+        $query->execute();
+        $result = $query->get_result();
         if ($result->num_rows > 0) {
             $case_id = $result->fetch_assoc()['case_id'];
-            $insert_tag_assoc = "INSERT INTO tag_assoc(tag_id, assoc_id) VALUES ('$tag_id', '$case_id')";
-            if ($conn->query($insert_tag_assoc) !== TRUE) {
-                echo "Error inserting into tag_assoc";
-            }
+            $assoc_id = $case_id;
+            $insert_tag_assoc->execute();
         }
     }
 
     $assoc_subjects = $_POST['assoc_subjects'];
     foreach ($assoc_subjects as $assoc_subject) {
         // Insert into tag_assoc for subjects
-        $query = "SELECT subject_id FROM subjects WHERE subject_name = '$assoc_subject'";
-        $result = $conn->query($query);
+        $query = $conn->prepare("SELECT subject_id FROM subjects WHERE subject_name = ?");
+        $query->bind_param("s", $assoc_subject);
+        $query->execute();
+        $result = $query->get_result();
         if ($result->num_rows > 0) {
             $subject_id = $result->fetch_assoc()['subject_id'];
-            $insert_tag_assoc = "INSERT INTO tag_assoc(tag_id, assoc_id) VALUES ('$tag_id', '$subject_id')";
-            if ($conn->query($insert_tag_assoc) !== TRUE) {
-                echo "Error inserting into tag_assoc";
-            }
+            $assoc_id = $subject_id;
+            $insert_tag_assoc->execute();
         }
     }
 
-    // Add to audit logs 
+    // Add to audit logs
     include '../included/audit.php';
     $id = $tag_id;
     $type = 'Edit';
@@ -124,11 +129,11 @@ if ($_POST) {
     $jsonDumpOfForm = json_encode($_POST);
     logAudit($id, $type, $audit_agent, $jsonDumpOfForm);
 
-
     // Redirect back to the dashboard after submission
     header("Location: ../main/dashboard.php");
     exit;
 }
+
 ?>
 
 <!-- HTML -->

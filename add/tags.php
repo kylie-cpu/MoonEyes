@@ -5,6 +5,7 @@ if (!isset($_SESSION['user'])) {
     header("Location: ../login/login-form.php");
     exit();
 }
+
 $user = $_SESSION['user'];
 $name = $user['name'];
 
@@ -24,55 +25,76 @@ include('../included/dropdowns.php');
 
 if ($_POST) {
     $tag_id = $unique_tag_id;
-    $name = preg_replace("/'/", "", $_POST['name']);
+    $name = $_POST['name'];
 
-    // Insert the tag into the tags table
-    $insert_tag = "INSERT INTO tags(tag_id, name, day_modified, modified_by) 
-    VALUES ('$tag_id', '$name', '$date', '$agent_id')";
+    // Prepare and bind the INSERT statement for tags table
+    $insert_tag = $conn->prepare("INSERT INTO tags (tag_id, name, day_modified, modified_by) VALUES (?, ?, ?, ?)");
+    $insert_tag->bind_param("ssss", $tag_id, $name, $date, $agent_id);
 
-    if ($conn->query($insert_tag) !== TRUE) {
-        echo "Error inserting into tags";
+    // Check if successfully inserted
+    if (!$insert_tag->execute()) {
+        echo "Error inserting into tags: " . $insert_tag->error;
+        exit();
     }
 
     $assoc_clients = $_POST['assoc_clients'];
     $assoc_cases = $_POST['assoc_cases'];
     $assoc_subjects = $_POST['assoc_subjects'];
 
+    // Prepare and bind
+    $insert_tag_assoc = $conn->prepare("INSERT INTO tag_assoc (tag_id, assoc_id) VALUES (?, ?)");
+    $insert_tag_assoc->bind_param("ss", $tag_id, $assoc_id);
+
     foreach ($assoc_clients as $assoc_client) {
         // Insert into tag_assoc for clients
-        $query = "SELECT client_id FROM clients WHERE client_name = '$assoc_client'";
-        $result = $conn->query($query);
+        $query = $conn->prepare("SELECT client_id FROM clients WHERE client_name = ?");
+        $query->bind_param("s", $assoc_client);
+        $query->execute();
+        $result = $query->get_result();
+
         if ($result->num_rows > 0) {
             $client_id = $result->fetch_assoc()['client_id'];
-            $insert_tag_assoc = "INSERT INTO tag_assoc(tag_id, assoc_id) VALUES ('$tag_id', '$client_id')";
-            if ($conn->query($insert_tag_assoc) !== TRUE) {
-                echo "Error inserting into tag_assoc";
+            $assoc_id = $client_id;
+
+            if (!$insert_tag_assoc->execute()) {
+                echo "Error inserting into tag_assoc: " . $insert_tag_assoc->error;
+                exit();
             }
         }
     }
 
     foreach ($assoc_cases as $assoc_case) {
         // Insert into tag_assoc for cases
-        $query = "SELECT case_id FROM cases WHERE title = '$assoc_case'";
-        $result = $conn->query($query);
+        $query = $conn->prepare("SELECT case_id FROM cases WHERE title = ?");
+        $query->bind_param("s", $assoc_case);
+        $query->execute();
+        $result = $query->get_result();
+
         if ($result->num_rows > 0) {
             $case_id = $result->fetch_assoc()['case_id'];
-            $insert_tag_assoc = "INSERT INTO tag_assoc(tag_id, assoc_id) VALUES ('$tag_id', '$case_id')";
-            if ($conn->query($insert_tag_assoc) !== TRUE) {
-                echo "Error inserting into tag_assoc";
+            $assoc_id = $case_id;
+
+            if (!$insert_tag_assoc->execute()) {
+                echo "Error inserting into tag_assoc: " . $insert_tag_assoc->error;
+                exit();
             }
         }
     }
 
     foreach ($assoc_subjects as $assoc_subject) {
         // Insert into tag_assoc for subjects
-        $query = "SELECT subject_id FROM subjects WHERE subject_name = '$assoc_subject'";
-        $result = $conn->query($query);
+        $query = $conn->prepare("SELECT subject_id FROM subjects WHERE subject_name = ?");
+        $query->bind_param("s", $assoc_subject);
+        $query->execute();
+        $result = $query->get_result();
+
         if ($result->num_rows > 0) {
             $subject_id = $result->fetch_assoc()['subject_id'];
-            $insert_tag_assoc = "INSERT INTO tag_assoc(tag_id, assoc_id) VALUES ('$tag_id', '$subject_id')";
-            if ($conn->query($insert_tag_assoc) !== TRUE) {
-                echo "Error inserting into tag_assoc";
+            $assoc_id = $subject_id;
+
+            if (!$insert_tag_assoc->execute()) {
+                echo "Error inserting into tag_assoc: " . $insert_tag_assoc->error;
+                exit();
             }
         }
     }
@@ -90,6 +112,7 @@ if ($_POST) {
     exit;
 }
 ?>
+
 
 <!-- HTML -->
 <!DOCTYPE html>

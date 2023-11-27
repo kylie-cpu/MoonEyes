@@ -26,6 +26,7 @@
     }
 
     $searchTerm = isset($_GET['normal']) ? $_GET['normal'] : '';
+    $searchTerm = preg_replace("/'/", "", $searchTerm);
     if ($_GET && isset($_GET['normal']))  {
 
         // Search clients

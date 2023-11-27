@@ -1,13 +1,17 @@
 Project Information
-    This is the feasibility prototype for Moon Eyes: Case Tracking System for Metro Detective Agency. 
-    This was created as part of our Senior Design Project as a deliverable for the first semester. 
+    This is the Moon Eyes Database for Metro Detective Agency. 
+    The main purpose of this project is to create a process that allows agents from Metro Detective Agency to submit and track case information(including client, subject and agent details). 
+    Overall, the main goals and objectives of MoonEyes are as follows: 
+        To provide a searchable database of all case information
+        To improve organization and centralize case and client details
+        To improve information exchange between agents
+        To increase efficiency when searching for case details
+        To ensure that all data is kept secure
+        To provide new marketing functionally via mass email
+    
+    For the preliminary user manual view at this link. 
+    https://docs.google.com/document/d/1WD1aAAUhQqxWY8cThbuvh1ejwqokAhZxxAoMQ8cRRbg/edit?usp=sharing
 
-    Although not complete, this prototype utlizes the key technologies needed to complete the project by December 2023. 
-
-    This prototype allows the user to log in, add cases/clients/subjects to the database, view details from their personalized dashboard, and edit cases.
-    When submitting a new client/case/subject the user can attach their submission to existing cases/clients/subjects and vice versa utilizing the Select2 drop downs. 
-    A user can also search the database for any entries.
-    Aditionally, admin users can acess an admin controls dashboard where they can add a new agent(user with a login) and view case metrics.
 
 Languages: HTML/CSS/PHP/Javascript
 Contributors: Callison, Valle-Baird, Shahu, Gesek
@@ -19,8 +23,16 @@ Libraries
         https://code.jquery.com/jquery-3.6.0.min.js
 
 Resources/Credits
-    The following resource was used as reference in order to create the side navigation bar:
-        https://www.w3schools.com/howto/howto_js_sidenav.asp
-
     The following tutorial video series by Life Beyond Code was used as reference for deploying the local test server(XAMPP), MySQL database, login form, and how to use PHP.
         https://www.youtube.com/watch?v=E9FfZ8goVTQ&list=PLglf6-OPbGDfDFpnN67xqvTCR4WxQm4bd&index=2
+
+    How to download files with PHP 
+        https://linuxhint.com/download_file_php/
+
+    How to create a top navigation bar
+        https://www.w3schools.com/howto/howto_js_topnav.asp
+
+    How to upload files with PHP
+        https://www.w3schools.com/php/php_file_upload.asp
+    
+

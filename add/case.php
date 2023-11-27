@@ -1,112 +1,135 @@
 <?php
-  //check for current session
-  session_start();
-  
-  if (!isset($_SESSION['user'])) {
+// Check for the current session
+session_start();
+
+// Make sure user logged in 
+if (!isset($_SESSION['user'])) {
     header("Location: ../login/login-form.php");
     exit();
-  }
+}
 
-  $user = $_SESSION['user'];
-  $name = $user['name'];
+$user = $_SESSION['user'];
+$name = $user['name'];
 
-  //Generate unique ID and initizialize agent_id for modified_by field
-  $unique_case_id = "CASE-" . uniqid();
-  $agent_id = $user['agent_id'];
+// Generate unique ID and initialize agent_id for the modified_by field
+$unique_case_id = "CASE-" . uniqid();
+$agent_id = $user['agent_id'];
 
-  //Connect to db
-  include('../database/connection.php');
+// Connect to the database
+include('../database/connection.php');
 
-  //Create date for date modified field
-  date_default_timezone_set('America/Detroit');
-  $date = date('Y-m-d H:i:s');
+// Create date for the date modified field
+date_default_timezone_set('America/Detroit');
+$date = date('Y-m-d H:i:s');
 
-  // Populate dropdowns
-  include('../included/dropdowns.php');
+// Populate dropdowns
+include('../included/dropdowns.php');
 
-
-  if ($_POST) {
+if ($_POST) {
     $case_id = $unique_case_id;
-    $title = preg_replace("/'/", "", $_POST['title']);
-    $purpose = preg_replace("/'/", "", $_POST['purpose']);
+    $title = $_POST['title'];
+    $purpose = $_POST['purpose'];
     $status = $_POST['status'];
-    $invoice = preg_replace("/'/", "", $_POST['invoice_info']);
+    $invoice = $_POST['invoice_info'];
     $assoc_client = $_POST['related_client'];
-    // regex out single quotes from notes...
-    $notes = preg_replace("/'/", "", $_POST['notes']);
-
-    $ud1 = preg_replace("/'/", "", $_POST['ud1']);
-    $ud2 = preg_replace("/'/", "", $_POST['ud2']);
-    $ud3 = preg_replace("/'/", "", $_POST['ud3']);
-    $ud4 = preg_replace("/'/", "", $_POST['ud4']);
-
+    $notes = $_POST['notes'];
+    $ud1 = $_POST['ud1'];
+    $ud2 = $_POST['ud2'];
+    $ud3 = $_POST['ud3'];
+    $ud4 = $_POST['ud4'];
     $modified_by = $agent_id;
     $day_modified = $date;
 
+    // Prepare and bind stmt
+    $insert_case = $conn->prepare("INSERT INTO cases (case_id, title, purpose, status, invoice, notes, ud1, ud2, ud3, ud4, modified_by, day_modified) 
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    $insert_case->bind_param("ssssssssssss", $case_id, $title, $purpose, $status, $invoice, $notes, $ud1, $ud2, $ud3, $ud4, $modified_by, $day_modified);
 
-    //Submit form into cases database
-    $insert_case = "INSERT INTO cases(case_id, title, purpose, status, invoice, notes, ud1, ud2, ud3, ud4, modified_by, day_modified) 
-    VALUES ('$case_id', '$title', '$purpose', '$status', '$invoice', '$notes', '$ud1', '$ud2', '$ud3', '$ud4', '$modified_by', '$day_modified')";
-    if ($conn->query($insert_case) !== TRUE) {
-      echo "Error inserting into cases";
+    if (!$insert_case->execute()) {
+        echo "Error inserting into cases";
     }
 
     // Insert into case_client table
     $related_clients = $_POST['related_clients'];
     foreach ($related_clients as $related_client) {
-      $query = "SELECT client_id FROM clients WHERE client_name = '$related_client'";
-      $result = $conn->query($query);
-      if ($result->num_rows > 0) {
-        $client_id = $result->fetch_assoc()['client_id'];
-      }
-      $insert_case_client = "INSERT INTO case_client(case_id, client_id) VALUES ('$case_id', '$client_id')";
-      if ($conn->query($insert_case_client) !== TRUE) {
-        echo "Error inserting into case_client";
-      }
+        $query = $conn->prepare("SELECT client_id FROM clients WHERE client_name = ?");
+        $query->bind_param("s", $related_client);
+        $query->execute();
+        $result = $query->get_result();
+
+        if ($result->num_rows > 0) {
+            $client_id = $result->fetch_assoc()['client_id'];
+        }
+
+        $insert_case_client = $conn->prepare("INSERT INTO case_client (case_id, client_id) VALUES (?, ?)");
+        $insert_case_client->bind_param("ss", $case_id, $client_id);
+
+        if (!$insert_case_client->execute()) {
+            echo "Error inserting into case_client";
+        }
     }
 
     // Insert into case_subject table
     $related_subjects = $_POST['related_subjects'];
     foreach ($related_subjects as $related_subject) {
-      $query = "SELECT subject_id FROM subjects WHERE subject_name = '$related_subject'";
-      $result = $conn->query($query);
-      if ($result->num_rows > 0) {
-        $subject_id = $result->fetch_assoc()['subject_id'];
-      }
-      $insert_case_subject = "INSERT INTO case_subject(case_id, subject_id) VALUES ('$case_id', '$subject_id')";
-      if ($conn->query($insert_case_subject) !== TRUE) {
-          echo "Error inserting into case_subject";
-      }
+        $query = $conn->prepare("SELECT subject_id FROM subjects WHERE subject_name = ?");
+        $query->bind_param("s", $related_subject);
+        $query->execute();
+        $result = $query->get_result();
+
+        if ($result->num_rows > 0) {
+            $subject_id = $result->fetch_assoc()['subject_id'];
+        }
+
+        $insert_case_subject = $conn->prepare("INSERT INTO case_subject (case_id, subject_id) VALUES (?, ?)");
+        $insert_case_subject->bind_param("ss", $case_id, $subject_id);
+
+        if (!$insert_case_subject->execute()) {
+            echo "Error inserting into case_subject";
+        }
     }
 
     // Insert into case_agent table
     $related_agents = $_POST['related_agents'];
     foreach ($related_agents as $related_agent) {
-      $query = "SELECT agent_id FROM agents WHERE name = '$related_agent'";
-      $result = $conn->query($query);
-      if ($result->num_rows > 0) {
-        $Ragent_id = $result->fetch_assoc()['agent_id'];
-      }
-      $insert_case_agent = "INSERT INTO case_agent(case_id, agent_id) VALUES ('$case_id', '$Ragent_id')";
-      if ($conn->query($insert_case_agent) !== TRUE) {
-          echo "Error inserting into case_agent";
-      }
+        $query = $conn->prepare("SELECT agent_id FROM agents WHERE name = ?");
+        $query->bind_param("s", $related_agent);
+        $query->execute();
+        $result = $query->get_result();
+
+        if ($result->num_rows > 0) {
+            $Ragent_id = $result->fetch_assoc()['agent_id'];
+        }
+
+        $insert_case_agent = $conn->prepare("INSERT INTO case_agent (case_id, agent_id) VALUES (?, ?)");
+        $insert_case_agent->bind_param("ss", $case_id, $Ragent_id);
+
+        if (!$insert_case_agent->execute()) {
+            echo "Error inserting into case_agent";
+        }
     }
 
     // Insert into tag_assoc table
     $related_tags = $_POST['related_tags'];
     foreach ($related_tags as $related_tag) {
-      $query = "SELECT tag_id FROM tags WHERE name = '$related_tag'";
-      $result = $conn->query($query);
-      if ($result->num_rows > 0) {
-        $tag_id = $result->fetch_assoc()['tag_id'];
-      }
-      $insert_tag_assoc = "INSERT INTO tag_assoc(tag_id, assoc_id) VALUES ('$tag_id', '$case_id')";
-      if ($conn->query($insert_tag_assoc) !== TRUE) {
-        echo "Error inserting into tag_assoc";
-      }
+        $query = $conn->prepare("SELECT tag_id FROM tags WHERE name = ?");
+        $query->bind_param("s", $related_tag);
+        $query->execute();
+        $result = $query->get_result();
+
+        if ($result->num_rows > 0) {
+            $tag_id = $result->fetch_assoc()['tag_id'];
+        }
+
+        $insert_tag_assoc = $conn->prepare("INSERT INTO tag_assoc (tag_id, assoc_id) VALUES (?, ?)");
+        $insert_tag_assoc->bind_param("ss", $tag_id, $case_id);
+
+        if (!$insert_tag_assoc->execute()) {
+            echo "Error inserting into tag_assoc";
+        }
     }
 
+    // For file upload
     $entity_id = $case_id;
     include '../included/upload.php';
 
@@ -118,12 +141,12 @@
     $jsonDumpOfForm = json_encode($_POST);
     logAudit($id, $type, $audit_agent, $jsonDumpOfForm);
 
-    // Redirect back to dashboard after submission
-    header("Location: ../main/dashboard.php"); 
+    // Redirect back to the dashboard after submission
+    header("Location: ../main/dashboard.php");
     exit;
-  }
-
+}
 ?>
+
 
 <!-- HTML -->
 <!DOCTYPE html>

@@ -4,7 +4,7 @@
         header("Location: ../login/login-form.php");
         exit();
     }
-    
+
     $user = $_SESSION['user'];
     $name = $user['name'];
 
@@ -70,92 +70,103 @@
         $email = $_POST['email'];
         $address = $_POST['address'];
         $phone_num = $_POST['phone'];
-
         $lawyer_name = $_POST['lawyer-name'];
-        $lawyer_email =  $_POST['lawyer-email'];
-        $lawyer_ph =  $_POST['lawyer-ph'];
+        $lawyer_email = $_POST['lawyer-email'];
+        $lawyer_ph = $_POST['lawyer-ph'];
         $lawyer_id = $_POST['lawyer-id'];
-        // regex out single quotes from notes...
-        $notes = preg_replace("/'/", "", $_POST['notes']);
-
-        $ud1 = preg_replace("/'/", "", $_POST['ud1']);
-        $ud2 = preg_replace("/'/", "", $_POST['ud2']);
-        $ud3 = preg_replace("/'/", "", $_POST['ud3']);
-        $ud4 = preg_replace("/'/", "", $_POST['ud4']);
-
+        $notes = $_POST['notes'];
+        $ud1 = $_POST['ud1'];
+        $ud2 = $_POST['ud2'];
+        $ud3 = $_POST['ud3'];
+        $ud4 = $_POST['ud4'];
+    
         $modified_by = $new_agent_id;
         $day_modified = $new_date;
-
-        // update clients table
-        $update_client_details = "UPDATE clients SET 
-        client_name = '$client_name',
-        email = '$email',
-        address = '$address',
-        phone_num = '$phone_num',
-        notes = '$notes',
-        lawyer = '$lawyer_id',
-        modified_by = '$modified_by',
-        day_modified = '$day_modified',
-        ud1 = '$ud1',
-        ud2 = '$ud2',
-        ud3 = '$ud3',
-        ud4 = '$ud4'
-        WHERE client_id = '$client_id'";
-
-        $conn->query($update_client_details); 
-
+    
+        // update clients table with prepared statement
+        $update_client_details = $conn->prepare("UPDATE clients SET 
+            client_name = ?,
+            email = ?,
+            address = ?,
+            phone_num = ?,
+            notes = ?,
+            lawyer = ?,
+            modified_by = ?,
+            day_modified = ?,
+            ud1 = ?,
+            ud2 = ?,
+            ud3 = ?,
+            ud4 = ?
+            WHERE client_id = ?");
+    
+        $update_client_details->bind_param("sssssssssssss", $client_name, $email, $address, $phone_num, $notes, $lawyer_id, $modified_by, $day_modified, $ud1, $ud2, $ud3, $ud4, $client_id);
+    
+        if (!$update_client_details->execute()) {
+            echo "Error updating client details: " . $update_client_details->error;
+            exit();
+        }
+    
         // delete old cases entries
-        $delete_old_cases = "DELETE FROM case_client WHERE client_id = '$client_id'";
-        $conn->query($delete_old_cases); 
-
-        // insert new into case_client table
+        $delete_old_cases = $conn->prepare("DELETE FROM case_client WHERE client_id = ?");
+        $delete_old_cases->bind_param("s", $client_id);
+        $delete_old_cases->execute();
+    
+        // insert new into case_client table with prepared statement
+        $insert_case_client = $conn->prepare("INSERT INTO case_client(case_id, client_id) VALUES (?, ?)");
+        $insert_case_client->bind_param("ss", $case_id, $client_id);
+    
         $related_cases = $_POST['related_cases'];
         foreach ($related_cases as $related_case) {
-          $query = "SELECT case_id FROM cases WHERE title = '$related_case'";
-          $result = $conn->query($query);
-          if ($result->num_rows > 0) {
-            $case_id = $result->fetch_assoc()['case_id'];
-          }
-          $insert_case_client = "INSERT INTO case_client(case_id, client_id) VALUES ('$case_id', '$client_id')";
-          if ($conn->query($insert_case_client) !== TRUE) {
-              echo "Error inserting into case_client";
-          }
+            $query = $conn->prepare("SELECT case_id FROM cases WHERE title = ?");
+            $query->bind_param("s", $related_case);
+            $query->execute();
+            $result = $query->get_result();
+            if ($result->num_rows > 0) {
+                $case_id = $result->fetch_assoc()['case_id'];
+                $insert_case_client->execute();
+            }
         }
-
-        // update lawyers table
-        $delete_existing_lawyers = "DELETE FROM lawyers WHERE lawyer_id = '$lawyer_id'";
-        $conn->query($delete_existing_lawyers);
-        $insert_lawyer_details = "INSERT INTO lawyers (lawyer_id, lawyer_name, lawyer_email, lawyer_ph) VALUES ('$lawyer_id', '$lawyer_name', '$lawyer_email', '$lawyer_ph')";
-        $conn->query($insert_lawyer_details);
-
-        // update tags table 
-        $delete_tags = "DELETE FROM tag_assoc WHERE assoc_id = '$client_id'";
-        $conn->query($delete_tags);
-
+    
+        // update lawyers table with prepared statements
+        $delete_existing_lawyers = $conn->prepare("DELETE FROM lawyers WHERE lawyer_id = ?");
+        $delete_existing_lawyers->bind_param("s", $lawyer_id);
+        $delete_existing_lawyers->execute();
+    
+        $insert_lawyer_details = $conn->prepare("INSERT INTO lawyers (lawyer_id, lawyer_name, lawyer_email, lawyer_ph) VALUES (?, ?, ?, ?)");
+        $insert_lawyer_details->bind_param("ssss", $lawyer_id, $lawyer_name, $lawyer_email, $lawyer_ph);
+        $insert_lawyer_details->execute();
+    
+        // update tags table with prepared statements
+        $delete_tags = $conn->prepare("DELETE FROM tag_assoc WHERE assoc_id = ?");
+        $delete_tags->bind_param("s", $client_id);
+        $delete_tags->execute();
+    
+        $insert_tag_assoc = $conn->prepare("INSERT INTO tag_assoc(tag_id, assoc_id) VALUES (?, ?)");
+        $insert_tag_assoc->bind_param("ss", $tag_id, $client_id);
+    
         $related_tags = $_POST['related_tags'];
         foreach ($related_tags as $related_tag) {
-          $query = "SELECT tag_id FROM tags WHERE name = '$related_tag'";
-          $result = $conn->query($query);
-          if ($result->num_rows > 0) {
-            $tag_id = $result->fetch_assoc()['tag_id'];
-          }
-          $insert_tag_assoc = "INSERT INTO tag_assoc(tag_id, assoc_id) VALUES ('$tag_id', '$client_id')";
-          if ($conn->query($insert_tag_assoc) !== TRUE) {
-            echo "Error inserting into tag_assoc";
-          }
+            $query = $conn->prepare("SELECT tag_id FROM tags WHERE name = ?");
+            $query->bind_param("s", $related_tag);
+            $query->execute();
+            $result = $query->get_result();
+            if ($result->num_rows > 0) {
+                $tag_id = $result->fetch_assoc()['tag_id'];
+                $insert_tag_assoc->execute();
+            }
         }
-
+    
         // delete old file assoc from DB if selected 
         $selected_files = $_POST['selected_files'];
         $entity_id = $client_id;
         foreach ($selected_files as $selected_file) {
-        include '../included/delete_file.php';
+            include '../included/delete_file.php';
         }
-
+    
         // upload new files
         $entity_id = $client_id;
         include '../included/upload.php';
-
+    
         // Add audit log
         include '../included/audit.php';
         $id = $client_id;
@@ -163,12 +174,12 @@
         $audit_agent = $new_agent_id;
         $jsonDumpOfForm = json_encode($_POST);
         logAudit($id, $type, $audit_agent, $jsonDumpOfForm);
-
-
+    
         // Redirect back to dashboard after submission
-        header("Location: ../main/dashboard.php"); 
+        header("Location: ../main/dashboard.php");
         exit;
     }
+    
 
 ?>
 

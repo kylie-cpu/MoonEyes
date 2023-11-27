@@ -58,7 +58,6 @@
     $audit_agent = $agent_id;
     $jsonDumpOfForm = '';
     logAudit($id, $type, $audit_agent, $jsonDumpOfForm);
-    
 
 ?>
 

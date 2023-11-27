@@ -17,6 +17,7 @@ include('../database/connection.php');
 
 IF ($_GET) {
     $searchID = $_GET['normal'];
+    $searchID = preg_replace("/'/", "", $searchID);
     $query_logs = "SELECT * FROM audit_log
     WHERE id = '$searchID'
     ORDER BY timestamp DESC";

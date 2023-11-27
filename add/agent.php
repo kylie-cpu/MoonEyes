@@ -1,65 +1,72 @@
-
 <?php
-  session_start();
-  $user = $_SESSION['user'];
-  $name = $user['name'];
+session_start();
+$user = $_SESSION['user'];
+$name = $user['name'];
 
-  // make sure user is an admin role
-  if ($_SESSION['user']['role'] !== 'admin') {
+// Make sure the user is in an admin role
+if ($_SESSION['user']['role'] !== 'admin') {
     header("Location: ../login/login-form.php");
     exit;
-  }
+}
 
-  // Initialize unique ID for subject & lawyer and also initizialize agent_id for modified_by field
-  $unique_agent_id = "AGENT-" . uniqid();
-  $agent_id = $user['agent_id'];
+// Initialize unique ID for subject & lawyer and also initialize agent_id for the modified_by field
+$unique_agent_id = "AGENT-" . uniqid();
+$agent_id = $user['agent_id'];
 
-  include('../database/connection.php');   
+include('../database/connection.php');
 
-  // Create date for date modified field
-  date_default_timezone_set('America/Detroit');
-  $date = date('Y-m-d H:i:s');
+// Create date for date modified field
+date_default_timezone_set('America/Detroit');
+$date = date('Y-m-d H:i:s');
 
-  // Populate dropdowns
-  include('../included/dropdowns.php');
+// Populate dropdowns
+include('../included/dropdowns.php');
 
-
-  if ($_POST) {
+if ($_POST) {
     $new_agent_id = $unique_agent_id;
     $username = $_POST['username'];
     $password = $_POST['password'];
-    $hashedPassword = password_hash($password, PASSWORD_BCRYPT); 
+    $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
     $new_name = $_POST['name'];
     $badge_num = $_POST['badge_number'];
     $modified_by = $agent_id;
     $day_modified = $date;
     $role = $_POST['role'];
     $email = $_POST['email'];
- 
-    // Submit data into agents
-    $insert_agent = "INSERT INTO agents(agent_id, username, password, name, badge_number, modified_at, modified_by, role, email) 
-    VALUES ('$new_agent_id', '$username', '$hashedPassword', '$new_name', '$badge_num', '$day_modified', '$modified_by', '$role', '$email' )";
 
-    //Check if successfully inserted
-    if ($conn->query($insert_agent) !== TRUE) {
-      echo "Error inserting into agents: ";
-    } 
+    // Prepare and bind stmt
+    $insert_agent = $conn->prepare("INSERT INTO agents (agent_id, username, password, name, badge_number, modified_at, modified_by, role, email) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    $insert_agent->bind_param("sssssssss", $new_agent_id, $username, $hashedPassword, $new_name, $badge_num, $day_modified, $modified_by, $role, $email);
+
+    // Check if successfully inserted
+    if (!$insert_agent->execute()) {
+        echo "Error inserting into agents: ";
+    }
+
+    // Prepare and bind 
+    $insert_case_agent = $conn->prepare("INSERT INTO case_agent (case_id, agent_id) VALUES (?, ?)");
 
     // Submit data into case_agent
     $related_cases = $_POST['related_cases'];
 
     foreach ($related_cases as $related_case) {
-      $query = "SELECT case_id FROM cases WHERE title = '$related_case'";
-      $result = $conn->query($query);
-      if ($result->num_rows > 0) {
-        while ($row = $result->fetch_assoc()) {
-          $Rcase_id= $row['case_id'];
+        $query = $conn->prepare("SELECT case_id FROM cases WHERE title = ?");
+        $query->bind_param("s", $related_case);
+        $query->execute();
+        $result = $query->get_result();
+
+        if ($result->num_rows > 0) {
+            while ($row = $result->fetch_assoc()) {
+                $Rcase_id = $row['case_id'];
+            }
         }
-      }
-      $insert_case_agent = "INSERT INTO case_agent(case_id, agent_id) VALUES ('$Rcase_id', '$new_agent_id')";
-      if ($conn->query($insert_case_agent) !== TRUE) {
-          echo "Error inserting into case_agent: ";
-      }
+
+        $insert_case_agent->bind_param("ss", $Rcase_id, $new_agent_id);
+
+        if (!$insert_case_agent->execute()) {
+            echo "Error inserting into case_agent: ";
+        }
     }
 
     // Add audit log
@@ -70,12 +77,12 @@
     $jsonDumpOfForm = json_encode($_POST);
     logAudit($id, $type, $audit_agent, $jsonDumpOfForm);
 
-    // Redirect back to dashboard after submission    
-    header("Location: ../main/dashboard.php"); 
+    // Redirect back to dashboard after submission
+    header("Location: ../main/dashboard.php");
     exit;
-    
-  }
+}
 ?>
+
 
 <!DOCTYPE html>
 <html>
@@ -103,7 +110,7 @@
   <!-- Database submission form -->
   <div id="content" class="content">
     <h2>Add an Agent</h2>
-    <form action="agent.php" method="POST" class="agent-form">
+    <form action="agent.php" method="POST" class="agent-form" onsubmit="return validateForm()">
       <div class="form-group1">
         <label for="agent_id"><span class="required">*</span>Agent ID</label>
         <input class="view-input" type="text" id="agent_id" name="agent_id" value="<?php echo $unique_agent_id ?>" readonly>
@@ -130,8 +137,9 @@
       </div>
 
       <div class="form-group2">
-        <label for="email"><span class="required">*</span>Password:</label>
-        <input type="password" id="password" name="password" required>
+          <label for="password"><span class="required">*</span>Password:</label>
+          <input type="password" id="password" name="password" required>
+          <p id="passwordError" style="color: red;"></p>
       </div>
 
       <div class="form-group">
@@ -165,7 +173,17 @@
   </div>
 
   <!-- Select 2 initialization for dropdown menus -->
-  <script>
+    <script>
+      function validateForm() {
+        var password = document.getElementById("password").value;
+        if (password.length < 10) {
+            document.getElementById("passwordError").innerHTML = "Password must be at least 10 characters long.";
+            return false;
+        } else {
+            document.getElementById("passwordError").innerHTML = "";
+            return true;
+        }
+      }
       $(document).ready(function() {
         // cases input field
         $('.js-example-basic-multiple-cases').select2({
@@ -173,7 +191,6 @@
           data: <?php echo json_encode($case_titles); ?>,
         });
       });
-  </script>
-
+    </script>
   </body>
 </html>

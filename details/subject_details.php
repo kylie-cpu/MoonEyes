@@ -6,13 +6,9 @@
     }
     $user = $_SESSION['user'];
     $name = $user['name'];
+    $agent_id = $user['agent_id'];
 
     $subject_id = $_GET['subject_id'];
-
-    // Initialize unique ID for subject & lawyer and also initizialize agent_id for modified_by field
-    $unique_subject_id = "SUBJECT-" . uniqid();
-    $unique_lawyer_id = "LAWYER-" . uniqid();
-    $agent_id = $user['agent_id'];
 
     include('../database/connection.php');
 
@@ -54,6 +50,7 @@
         $assoc_tags = $result_assoc_tags->fetch_all(MYSQLI_ASSOC);
     }
 
+    // Get attached files
     $query_assoc_files = "SELECT file_id, fileName FROM files WHERE entity_id = '$subject_id'";
     $result_assoc_files = $conn->query($query_assoc_files);
     if ($result_assoc_files) {

@@ -57,105 +57,116 @@
         $assoc_files = $result_assoc_files->fetch_all(MYSQLI_ASSOC);
     }
 
-    // if submit button is clicked
+    // if submit is clicked
     if ($_POST) {
         $subject_id = $_POST['subject_id'];
         $subject_name = $_POST['name'];
         $address = $_POST['address'];
         $phone_nums = $_POST['phone_numbers'];
         $lawyer_name = $_POST['lawyer-name'];
-        $lawyer_email =  $_POST['lawyer-email'];
+        $lawyer_email = $_POST['lawyer-email'];
         $lawyer_id = $_POST['lawyer-id'];
-
-        $lawyer_ph =  $_POST['lawyer-ph'];
-        // regex out single quotes from notes...
-        $notes = preg_replace("/'/", "", $_POST['notes']);
-        $ud1 = preg_replace("/'/", "", $_POST['ud1']);
-        $ud2 = preg_replace("/'/", "", $_POST['ud2']);
-        $ud3 = preg_replace("/'/", "", $_POST['ud3']);
-        $ud4 = preg_replace("/'/", "", $_POST['ud4']);
-        $gps = preg_replace("/'/", "", $_POST['gps']);
-
+        $lawyer_ph = $_POST['lawyer-ph'];
+        $notes = $_POST['notes'];
+        $ud1 = $_POST['ud1'];
+        $ud2 = $_POST['ud2'];
+        $ud3 = $_POST['ud3'];
+        $ud4 = $_POST['ud4'];
+        $gps = $_POST['gps'];
+    
         $modified_by = $new_agent_id;
         $day_modified = $new_date;
         $vehicle_info = preg_replace("/'/", "", $_POST['vehicle_info']);
         $pow = preg_replace("/'/", "", $_POST['place_of_work']);
         $associates = $_POST['associates'];
-
-        // update subjects table
-        $update_subject_details = "UPDATE subjects SET 
-        subject_name = '$subject_name',
-        address = '$address',
-        phone_nums = '$phone_nums',
-        associates = '$associates',
-        vehicle_info = '$vehicle_info',
-        place_of_work ='$pow',
-        notes = '$notes',
-        lawyer = '$lawyer_id',
-        modified_by = '$modified_by',
-        day_modified = '$day_modified',
-        ud1 = '$ud1',
-        ud2 = '$ud2',
-        ud3 = '$ud3',
-        ud4 = '$ud4',
-        gps = '$gps'
-        WHERE subject_id = '$subject_id'";
-
-        $conn->query($update_subject_details); 
-
+    
+        // update subjects table with prepared statement
+        $update_subject_details = $conn->prepare("UPDATE subjects SET 
+            subject_name = ?,
+            address = ?,
+            phone_nums = ?,
+            associates = ?,
+            vehicle_info = ?,
+            place_of_work = ?,
+            notes = ?,
+            lawyer = ?,
+            modified_by = ?,
+            day_modified = ?,
+            ud1 = ?,
+            ud2 = ?,
+            ud3 = ?,
+            ud4 = ?,
+            gps = ?
+            WHERE subject_id = ?");
+    
+        $update_subject_details->bind_param("ssssssssssssssss", $subject_name, $address, $phone_nums, $associates, $vehicle_info, $pow, $notes, $lawyer_id, $modified_by, $day_modified, $ud1, $ud2, $ud3, $ud4, $gps, $subject_id);
+    
+        if (!$update_subject_details->execute()) {
+            echo "Error updating subject details: " . $update_subject_details->error;
+            exit();
+        }
+    
         // delete old cases entries
-        $delete_old_cases = "DELETE FROM case_subject WHERE subject_id = '$subject_id'";
-        $conn->query($delete_old_cases); 
-
-        // insert new into case_subject table
+        $delete_old_cases = $conn->prepare("DELETE FROM case_subject WHERE subject_id = ?");
+        $delete_old_cases->bind_param("s", $subject_id);
+        $delete_old_cases->execute();
+    
+        // insert new into case_subject table with prepared statement
+        $insert_case_subject = $conn->prepare("INSERT INTO case_subject(case_id, subject_id) VALUES (?, ?)");
+        $insert_case_subject->bind_param("ss", $case_id, $subject_id);
+    
         $related_cases = $_POST['related_cases'];
         foreach ($related_cases as $related_case) {
-          $query = "SELECT case_id FROM cases WHERE title = '$related_case'";
-          $result = $conn->query($query);
-          if ($result->num_rows > 0) {
-            $case_id = $result->fetch_assoc()['case_id'];
-          }
-          $insert_case_subject = "INSERT INTO case_subject(case_id, subject_id) VALUES ('$case_id', '$subject_id')";
-          if ($conn->query($insert_case_subject) !== TRUE) {
-              echo "Error inserting into case_subject";
-          }
+            $query = $conn->prepare("SELECT case_id FROM cases WHERE title = ?");
+            $query->bind_param("s", $related_case);
+            $query->execute();
+            $result = $query->get_result();
+            if ($result->num_rows > 0) {
+                $case_id = $result->fetch_assoc()['case_id'];
+                $insert_case_subject->execute();
+            }
         }
-
-        // update lawyers table
-        $delete_existing_lawyers = "DELETE FROM lawyers WHERE lawyer_id = '$lawyer_id'";
-        $conn->query($delete_existing_lawyers);
-        $insert_lawyer_details = "INSERT INTO lawyers (lawyer_id, lawyer_name, lawyer_email, lawyer_ph) VALUES ('$lawyer_id', '$lawyer_name', '$lawyer_email', '$lawyer_ph')";
-        $conn->query($insert_lawyer_details);
-
-        
-        // update tags table 
-        $delete_tags = "DELETE FROM tag_assoc WHERE assoc_id = '$client_id'";
-        $conn->query($delete_tags);
-
+    
+        // update lawyers table with prepared statements
+        $delete_existing_lawyers = $conn->prepare("DELETE FROM lawyers WHERE lawyer_id = ?");
+        $delete_existing_lawyers->bind_param("s", $lawyer_id);
+        $delete_existing_lawyers->execute();
+    
+        $insert_lawyer_details = $conn->prepare("INSERT INTO lawyers (lawyer_id, lawyer_name, lawyer_email, lawyer_ph) VALUES (?, ?, ?, ?)");
+        $insert_lawyer_details->bind_param("ssss", $lawyer_id, $lawyer_name, $lawyer_email, $lawyer_ph);
+        $insert_lawyer_details->execute();
+    
+        // update tags table with prepared statements
+        $delete_tags = $conn->prepare("DELETE FROM tag_assoc WHERE assoc_id = ?");
+        $delete_tags->bind_param("s", $subject_id);
+        $delete_tags->execute();
+    
+        $insert_tag_assoc = $conn->prepare("INSERT INTO tag_assoc(tag_id, assoc_id) VALUES (?, ?)");
+        $insert_tag_assoc->bind_param("ss", $tag_id, $subject_id);
+    
         $related_tags = $_POST['related_tags'];
         foreach ($related_tags as $related_tag) {
-          $query = "SELECT tag_id FROM tags WHERE name = '$related_tag'";
-          $result = $conn->query($query);
-          if ($result->num_rows > 0) {
-            $tag_id = $result->fetch_assoc()['tag_id'];
-          }
-          $insert_tag_assoc = "INSERT INTO tag_assoc(tag_id, assoc_id) VALUES ('$tag_id', '$subject_id')";
-          if ($conn->query($insert_tag_assoc) !== TRUE) {
-            echo "Error inserting into tag_assoc";
-          }
+            $query = $conn->prepare("SELECT tag_id FROM tags WHERE name = ?");
+            $query->bind_param("s", $related_tag);
+            $query->execute();
+            $result = $query->get_result();
+            if ($result->num_rows > 0) {
+                $tag_id = $result->fetch_assoc()['tag_id'];
+                $insert_tag_assoc->execute();
+            }
         }
-
+    
         // delete old file assoc from DB if selected 
         $selected_files = $_POST['selected_files'];
         $entity_id = $subject_id;
         foreach ($selected_files as $selected_file) {
-        include '../included/delete_file.php';
+            include '../included/delete_file.php';
         }
-
+    
         // upload new files
         $entity_id = $subject_id;
         include '../included/upload.php';
-
+    
         // Add audit log
         include '../included/audit.php';
         $id = $subject_id;
@@ -163,11 +174,12 @@
         $audit_agent = $new_agent_id;
         $jsonDumpOfForm = json_encode($_POST);
         logAudit($id, $type, $audit_agent, $jsonDumpOfForm);
-
+    
         // Redirect back to dashboard after submission
-        header("Location: ../main/dashboard.php"); 
+        header("Location: ../main/dashboard.php");
         exit;
     }
+    
 ?>
 
 <!DOCTYPE html>

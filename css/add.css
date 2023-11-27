@@ -207,7 +207,7 @@ textarea, select {
   .case-form,
   .agent-form
   .tag-form {
-    background-color: white;
+    background-color: white !important;
     border-radius: 8px;
     box-shadow: none !important;
     width: 90%  !important;

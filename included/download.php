@@ -3,7 +3,7 @@ include('../database/connection.php');
 if (isset($_GET['file_id'])) {
     $file_id = $_GET['file_id'];
 
-    // Retrieve the file name and path from the database
+    // Retrieve the file name and path from DB
     $query = "SELECT fileName FROM files WHERE file_id = '$file_id'";
     $result = $conn->query($query);
 

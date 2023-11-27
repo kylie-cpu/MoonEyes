@@ -1,30 +1,30 @@
 <?php
-  session_start();
+session_start();
 
-  if (!isset($_SESSION['user'])) {
+if (!isset($_SESSION['user'])) {
     header("Location: ../login/login-form.php");
     exit();
-  }
+}
 
-  $user = $_SESSION['user'];
-  $name = $user['name'];
+$user = $_SESSION['user'];
+$name = $user['name'];
 
-  //Generate unique ID for subject and also initizialize agent_id for modified_by field
-  $unique_client_id = "CLIENT-" . uniqid();
-  $unique_lawyer_id = "LAWYER-" . uniqid();
-  $agent_id = $user['agent_id'];
+// Generate unique ID for subject and also initialize agent_id for modified_by field
+$unique_client_id = "CLIENT-" . uniqid();
+$unique_lawyer_id = "LAWYER-" . uniqid();
+$agent_id = $user['agent_id'];
 
-  include('../database/connection.php');
+include('../database/connection.php');
 
-  //Create date for date modified field
-  date_default_timezone_set('America/Detroit');
-  $date = date('Y-m-d H:i:s');
+// Create date for date modified field
+date_default_timezone_set('America/Detroit');
+$date = date('Y-m-d H:i:s');
 
-  // Populate dropdowns
-  include('../included/dropdowns.php');
-  
-  //Submit form into clients database
-  if ($_POST) {
+// Populate dropdowns
+include('../included/dropdowns.php');
+
+// Submit form into clients database
+if ($_POST) {
     $client_id = $unique_client_id;
     $client_name = $_POST['name'];
     $email = $_POST['email'];
@@ -32,64 +32,85 @@
     $phone_num = $_POST['phone'];
     $lawyer_id = $unique_lawyer_id;
     $lawyer_name = $_POST['lawyer-name'];
-    $lawyer_email =  $_POST['lawyer-email'];
-    $lawyer_ph =  $_POST['lawyer-ph'];
-    // regex out single quotes from notes...
-    $notes = preg_replace("/'/", "", $_POST['notes']);
-    $ud1 = preg_replace("/'/", "", $_POST['ud1']);
-    $ud2 = preg_replace("/'/", "", $_POST['ud2']);
-    $ud3 = preg_replace("/'/", "", $_POST['ud3']);
-    $ud4 = preg_replace("/'/", "", $_POST['ud4']);
+    $lawyer_email = $_POST['lawyer-email'];
+    $lawyer_ph = $_POST['lawyer-ph'];
+    $notes = $_POST['notes'];
+    $ud1 = $_POST['ud1'];
+    $ud2 = $_POST['ud2'];
+    $ud3 = $_POST['ud3'];
+    $ud4 = $_POST['ud4'];
 
     $modified_by = $agent_id;
     $day_modified = $date;
 
-    //Submit data in clients
-    $insert_client = "INSERT INTO clients(client_id, client_name, email, address, phone_num, lawyer, notes, ud1, ud2, ud3, ud4, modified_by, day_modified) 
-    VALUES ('$client_id', '$client_name', '$email', '$address', '$phone_num', '$lawyer_id', '$notes', '$ud1', '$ud2', '$ud3', '$ud4', '$modified_by' ,'$day_modified')";
-    if ($conn->query($insert_client) !== TRUE) {
-      echo "Error inserting into clients";
-   } 
+    // Prepare and bind stmt
+    $insert_client = $conn->prepare("INSERT INTO clients (client_id, client_name, email, address, phone_num, lawyer, notes, ud1, ud2, ud3, ud4, modified_by, day_modified) 
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    $insert_client->bind_param("sssssssssssss", $client_id, $client_name, $email, $address, $phone_num, $lawyer_id, $notes, $ud1, $ud2, $ud3, $ud4, $modified_by, $day_modified);
 
-   //Submit data into lawyer if email or name entered
-   if (!empty($lawyer_name) || !empty($lawyer_email)) {
-      $insert_lawyer = "INSERT INTO lawyers(lawyer_id, lawyer_name, lawyer_email, lawyer_ph) 
-      VALUES ('$lawyer_id', '$lawyer_name', '$lawyer_email', '$lawyer_ph')";
-
-      if ($conn->query($insert_lawyer) !== TRUE) {
-          echo "Error inserting into lawyers";
-      }
+    // Check if successfully inserted
+    if (!$insert_client->execute()) {
+        echo "Error inserting into clients";
     }
 
-    //Submit data in case_client
+    // Submit data into lawyer if email or name entered
+    if (!empty($lawyer_name) || !empty($lawyer_email)) {
+        // Prepare and bind stmt
+        $insert_lawyer = $conn->prepare("INSERT INTO lawyers (lawyer_id, lawyer_name, lawyer_email, lawyer_ph) 
+                                         VALUES (?, ?, ?, ?)");
+        $insert_lawyer->bind_param("ssss", $lawyer_id, $lawyer_name, $lawyer_email, $lawyer_ph);
+
+        if (!$insert_lawyer->execute()) {
+            echo "Error inserting into lawyers";
+        }
+    }
+
+    // Prepare and bind case_client
+    $insert_case_client = $conn->prepare("INSERT INTO case_client (case_id, client_id) VALUES (?, ?)");
+
+    // Submit data in case_client
     $related_cases = $_POST['related_cases'];
     foreach ($related_cases as $related_case) {
-      $query = "SELECT case_id FROM cases WHERE title = '$related_case'";
-      $result = $conn->query($query);
-      if ($result->num_rows > 0) {
-        $row = $result->fetch_assoc();
-        $Rcase_id = $row['case_id'];
-      }
-      $insert_case_client = "INSERT INTO case_client(case_id, client_id) VALUES ('$Rcase_id', '$client_id')";
-      if ($conn->query($insert_case_client) !== TRUE) {
-        echo "Error inserting into case_client";
-      }
+        $query = $conn->prepare("SELECT case_id FROM cases WHERE title = ?");
+        $query->bind_param("s", $related_case);
+        $query->execute();
+        $result = $query->get_result();
+
+        if ($result->num_rows > 0) {
+            $row = $result->fetch_assoc();
+            $Rcase_id = $row['case_id'];
+        }
+
+        $insert_case_client->bind_param("ss", $Rcase_id, $client_id);
+
+        if (!$insert_case_client->execute()) {
+            echo "Error inserting into case_client";
+        }
     }
+
+    // Prepare and bind stmt for tags
+    $insert_tag_assoc = $conn->prepare("INSERT INTO tag_assoc (tag_id, assoc_id) VALUES (?, ?)");
 
     // Insert into tag_assoc table
     $related_tags = $_POST['related_tags'];
     foreach ($related_tags as $related_tag) {
-      $query = "SELECT tag_id FROM tags WHERE name = '$related_tag'";
-      $result = $conn->query($query);
-      if ($result->num_rows > 0) {
-        $tag_id = $result->fetch_assoc()['tag_id'];
-      }
-      $insert_tag_assoc = "INSERT INTO tag_assoc(tag_id, assoc_id) VALUES ('$tag_id', '$client_id')";
-      if ($conn->query($insert_tag_assoc) !== TRUE) {
-        echo "Error inserting into tag_assoc";
-      }
+        $query = $conn->prepare("SELECT tag_id FROM tags WHERE name = ?");
+        $query->bind_param("s", $related_tag);
+        $query->execute();
+        $result = $query->get_result();
+
+        if ($result->num_rows > 0) {
+            $tag_id = $result->fetch_assoc()['tag_id'];
+        }
+
+        $insert_tag_assoc->bind_param("ss", $tag_id, $client_id);
+
+        if (!$insert_tag_assoc->execute()) {
+            echo "Error inserting into tag_assoc";
+        }
     }
 
+    // For file upload
     $entity_id = $client_id;
     include '../included/upload.php';
 
@@ -101,12 +122,12 @@
     $jsonDumpOfForm = json_encode($_POST);
     logAudit($id, $type, $audit_agent, $jsonDumpOfForm);
 
-    // Redirect back to dashboard after submission    
-    header("Location: ../main/dashboard.php"); 
+    // Redirect back to the dashboard after submission
+    header("Location: ../main/dashboard.php");
     exit;
-    
-  }
+}
 ?>
+
 
 <!DOCTYPE html>
 <html>

@@ -1,97 +1,117 @@
 <?php
-  session_start();
-  if (!isset($_SESSION['user'])) {
+session_start();
+
+if (!isset($_SESSION['user'])) {
     header("Location: ../login/login-form.php");
     exit();
-  }
+}
 
-  $user = $_SESSION['user'];
-  $name = $user['name'];
+$user = $_SESSION['user'];
+$name = $user['name'];
 
-  // Initialize unique ID for subject & lawyer and also initizialize agent_id for modified_by field
-  $unique_subject_id = "SUBJECT-" . uniqid();
-  $unique_lawyer_id = "LAWYER-" . uniqid();
-  $agent_id = $user['agent_id'];
+// Initialize unique ID for subject & lawyer and also initialize agent_id for modified_by field
+$unique_subject_id = "SUBJECT-" . uniqid();
+$unique_lawyer_id = "LAWYER-" . uniqid();
+$agent_id = $user['agent_id'];
 
-  include('../database/connection.php');
+include('../database/connection.php');
 
-  // Create date for date modified field
-  date_default_timezone_set('America/Detroit');
-  $date = date('Y-m-d H:i:s');
+// Create date for date modified field
+date_default_timezone_set('America/Detroit');
+$date = date('Y-m-d H:i:s');
 
-  include('../included/dropdowns.php');
+include('../included/dropdowns.php');
 
-  if ($_POST) {
-    //Submit form into subjects/lawyer database
+if ($_POST) {
+    // Submit form into subjects/lawyer database
     $subject_id = $unique_subject_id;
     $subject_name = $_POST['name'];
     $address = $_POST['address'];
     $phone_nums = $_POST['phone_numbers'];
     $lawyer_id = $unique_lawyer_id;
     $lawyer_name = $_POST['lawyer-name'];
-    $lawyer_email =  $_POST['lawyer-email'];
-    $lawyer_ph =  $_POST['lawyer-ph'];
-    // regex out single quotes from notes...
-    $notes = preg_replace("/'/", "", $_POST['notes']);
-    $ud1 = preg_replace("/'/", "", $_POST['ud1']);
-    $ud2 = preg_replace("/'/", "", $_POST['ud2']);
-    $ud3 = preg_replace("/'/", "", $_POST['ud3']);
-    $ud4 = preg_replace("/'/", "", $_POST['ud4']);
-    $gps = preg_replace("/'/", "", $_POST['gps']);
-
+    $lawyer_email = $_POST['lawyer-email'];
+    $lawyer_ph = $_POST['lawyer-ph'];
+    $notes = $_POST['notes'];
+    $ud1 = $_POST['ud1'];
+    $ud2 = $_POST['ud2'];
+    $ud3 = $_POST['ud3'];
+    $ud4 = $_POST['ud4'];
+    $gps = $_POST['gps'];
     $modified_by = $agent_id;
     $day_modified = $date;
-    $vehicle_info =  preg_replace("/'/", "", $_POST['vehicle_info']);
-    $pow =  preg_replace("/'/", "", $_POST['place_of_work']);
+    $vehicle_info = $_POST['vehicle_info'];
+    $pow = $_POST['place_of_work'];
     $associates = $_POST['associates'];
 
-    // Insert into subjects
-    $insert_subject = "INSERT INTO subjects(subject_id, subject_name, address, phone_nums, lawyer, notes, ud1, ud2, ud3, ud4, gps, modified_by, day_modified, vehicle_info, place_of_work, associates) 
-    VALUES ('$subject_id', '$subject_name', '$address', '$phone_nums', '$lawyer_id', '$notes', '$ud1', '$ud2', '$ud3', '$ud4', '$gps', '$modified_by' ,'$day_modified', '$vehicle_info', '$pow', '$associates')";
+    // Prepare and bind stmt for subjects
+    $insert_subject = $conn->prepare("INSERT INTO subjects (subject_id, subject_name, address, phone_nums, lawyer, notes, ud1, ud2, ud3, ud4, gps, modified_by, day_modified, vehicle_info, place_of_work, associates) 
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    $insert_subject->bind_param("ssssssssssssssss", $subject_id, $subject_name, $address, $phone_nums, $lawyer_id, $notes, $ud1, $ud2, $ud3, $ud4, $gps, $modified_by, $day_modified, $vehicle_info, $pow, $associates);
 
-    if ($conn->query($insert_subject) !== TRUE) {
-      echo "Error inserting into subjects";
+    // Check if successfully inserted
+    if (!$insert_subject->execute()) {
+        echo "Error inserting into subjects";
     }
 
-   //Submit data into lawyer if lawyer email or name entered
-   if (!empty($lawyer_name) || !empty($lawyer_email)) {
-      $insert_lawyer = "INSERT INTO lawyers(lawyer_id, lawyer_name, lawyer_email, lawyer_ph) 
-      VALUES ('$lawyer_id', '$lawyer_name', '$lawyer_email', '$lawyer_ph')";
+    // Submit data into lawyer if lawyer email or name entered
+    if (!empty($lawyer_name) || !empty($lawyer_email)) {
+        // Prepare and bind lawyers
+        $insert_lawyer = $conn->prepare("INSERT INTO lawyers (lawyer_id, lawyer_name, lawyer_email, lawyer_ph) 
+                                         VALUES (?, ?, ?, ?)");
+        $insert_lawyer->bind_param("ssss", $lawyer_id, $lawyer_name, $lawyer_email, $lawyer_ph);
 
-      if ($conn->query($insert_lawyer) !== TRUE) {
-          echo "Error inserting into lawyers";
-      }
+        if (!$insert_lawyer->execute()) {
+            echo "Error inserting into lawyers";
+        }
     }
-    
-    //Submit data in case_subject
+
+    // Prepare and bind  for case_subject 
+    $insert_case_subject = $conn->prepare("INSERT INTO case_subject (case_id, subject_id) VALUES (?, ?)");
+
+    // Submit data in case_subject
     $related_cases = $_POST['related_cases'];
     foreach ($related_cases as $related_case) {
-      $query = "SELECT case_id FROM cases WHERE title = '$related_case'";
-      $result = $conn->query($query);
-      if ($result->num_rows > 0) {
-        $row = $result->fetch_assoc();
-        $Rcase_id = $row['case_id'];
-      }
-      $insert_case_subject = "INSERT INTO case_subject(case_id, subject_id) VALUES ('$Rcase_id', '$subject_id')";
-      if ($conn->query($insert_case_subject) !== TRUE) {
-          echo "Error inserting into case_subject";
-      }
+        $query = $conn->prepare("SELECT case_id FROM cases WHERE title = ?");
+        $query->bind_param("s", $related_case);
+        $query->execute();
+        $result = $query->get_result();
+
+        if ($result->num_rows > 0) {
+            $row = $result->fetch_assoc();
+            $Rcase_id = $row['case_id'];
+        }
+
+        $insert_case_subject->bind_param("ss", $Rcase_id, $subject_id);
+
+        if (!$insert_case_subject->execute()) {
+            echo "Error inserting into case_subject";
+        }
     }
+
+    // Prepare and bind the INSERT statement for tag_assoc table
+    $insert_tag_assoc = $conn->prepare("INSERT INTO tag_assoc (tag_id, assoc_id) VALUES (?, ?)");
 
     // Insert into tag_assoc table
     $related_tags = $_POST['related_tags'];
     foreach ($related_tags as $related_tag) {
-      $query = "SELECT tag_id FROM tags WHERE name = '$related_tag'";
-      $result = $conn->query($query);
-      if ($result->num_rows > 0) {
-        $tag_id = $result->fetch_assoc()['tag_id'];
-      }
-      $insert_tag_assoc = "INSERT INTO tag_assoc(tag_id, assoc_id) VALUES ('$tag_id', '$subject_id')";
-      if ($conn->query($insert_tag_assoc) !== TRUE) {
-        echo "Error inserting into tag_assoc";
-      }
+        $query = $conn->prepare("SELECT tag_id FROM tags WHERE name = ?");
+        $query->bind_param("s", $related_tag);
+        $query->execute();
+        $result = $query->get_result();
+
+        if ($result->num_rows > 0) {
+            $tag_id = $result->fetch_assoc()['tag_id'];
+        }
+
+        $insert_tag_assoc->bind_param("ss", $tag_id, $subject_id);
+
+        if (!$insert_tag_assoc->execute()) {
+            echo "Error inserting into tag_assoc";
+        }
     }
 
+    // For file uploads
     $entity_id = $subject_id;
     include '../included/upload.php';
 
@@ -104,10 +124,11 @@
     logAudit($id, $type, $audit_agent, $jsonDumpOfForm);
 
     // Redirect back to dashboard after submission
-    header("Location: ../main/dashboard.php"); 
+    header("Location: ../main/dashboard.php");
     exit;
-  }
+}
 ?>
+
 
 <!DOCTYPE html>
 <html>

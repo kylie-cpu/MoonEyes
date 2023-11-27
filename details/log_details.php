@@ -1,9 +1,12 @@
 <?php 
 session_start();
+
+//Check if user is logged in
 if (!isset($_SESSION['user'])) {
     header("Location: ../login/login-form.php");
     exit();
 }
+
 $user = $_SESSION['user'];
 $name = $user['name'];
 
@@ -18,6 +21,7 @@ include('../database/connection.php');
 $id = $_GET['id'];
 $timestamp = $_GET['timestamp'];
 
+//select correct log
 $log_details = "SELECT audit_log.*, agents.name AS agent_name
 FROM audit_log 
 LEFT JOIN agents ON audit_log.agent = agents.agent_id
@@ -49,6 +53,7 @@ $logs = $result_log_details->fetch_all(MYSQLI_ASSOC);
 <body>
 
     <div class='details'>
+        <!-- display log details -->
         <?php foreach($logs as $log): ?>
             <?php include("../nav/sidenav.php"); ?>
             <h1>ID: </h1>

@@ -9,7 +9,7 @@
     $name = $user['name'];
     $agent_id = $user['agent_id'];
 
-    $tag_id = $_GET['tag_id']; // Assuming you have a tag_id in the URL to identify the tag to view
+    $tag_id = $_GET['tag_id'];
 
     include('../database/connection.php');
 
@@ -20,7 +20,7 @@
     date_default_timezone_set('America/Detroit');
     $date = date('Y-m-d H:i:s');
 
-    // Get tag details from the "tags" table
+    // Get tag details 
     $query_tag_details = "SELECT tags.*, agents.name as mod_agent FROM tags 
     LEFT JOIN agents ON tags.modified_by = agents.agent_id
     WHERE tags.tag_id = '$tag_id'

@@ -92,108 +92,158 @@
   // if submit button is clicked
   if ($_POST) {
     $case_id = $_POST['case_id'];
-    $title = preg_replace("/'/", "", $_POST['title']);
-    $purpose = preg_replace("/'/", "", $_POST['purpose']);
+    $title = $_POST['title'];
+    $purpose = $_POST['purpose'];
     $status = $_POST['status'];
-    $invoice = preg_replace("/'/", "", $_POST['invoice_info']);
+    $invoice = $_POST['invoice_info'];
     $assoc_client = $_POST['related_client'];
-    // regex out single quotes from notes...
-    $notes = preg_replace("/'/", "", $_POST['notes']);
-
-    $ud1 = preg_replace("/'/", "", $_POST['ud1']);
-    $ud2 = preg_replace("/'/", "", $_POST['ud2']);
-    $ud3 = preg_replace("/'/", "", $_POST['ud3']);
-    $ud4 = preg_replace("/'/", "", $_POST['ud4']);
+    $notes = $_POST['notes'];
+    $ud1 = $_POST['ud1'];
+    $ud2 = $_POST['ud2'];
+    $ud3 = $_POST['ud3'];
+    $ud4 = $_POST['ud4'];
 
     $modified_by = $new_agent_id;
     $day_modified = $new_date;
 
-    // update cases table
-    $update_case_details = "UPDATE cases SET
-    title = '$title',
-    purpose = '$purpose',
-    status = '$status',
-    invoice = '$invoice',
-    notes = '$notes',
-    modified_by = '$modified_by',
-    day_modified = '$day_modified',
-    ud1 = '$ud1',
-    ud2 = '$ud2',
-    ud3 = '$ud3',
-    ud4 = '$ud4'
-    WHERE case_id = '$case_id'";
-
-    $conn->query($update_case_details); 
-
-    //delete old client entry
-    $delete_old_client = "DELETE FROM case_client WHERE case_id = '$case_id'";
-    $conn->query($delete_old_client);    
-
-    // Insert into case_client table
-    $related_clients = $_POST['related_clients'];
-    foreach ($related_clients as $related_client) {
-      $query = "SELECT client_id FROM clients WHERE client_name = '$related_client'";
-      $result = $conn->query($query);
-      if ($result->num_rows > 0) {
-        $client_id = $result->fetch_assoc()['client_id'];
-      }
-      $insert_case_client = "INSERT INTO case_client(case_id, client_id) VALUES ('$case_id', '$client_id')";
-      if ($conn->query($insert_case_client) !== TRUE) {
-        echo "Error inserting into case_client";
-      }
+    // Prepare and bind 
+    $update_case_details = ("UPDATE cases SET
+    title = ?,
+    purpose = ?,
+    status = ?,
+    invoice = ?,
+    notes = ?,
+    modified_by = ?,
+    day_modified = ?,
+    ud1 = ?,
+    ud2 = ?,
+    ud3 = ?,
+    ud4 = ?
+    WHERE case_id = ?");
+    $stmt = $conn->prepare($update_case_details);
+    $stmt->bind_param("ssssssssssss", $title, $purpose, $status, $invoice, $notes, $modified_by, $day_modified, $ud1, $ud2, $ud3, $ud4, $case_id);
+    // Check if the update was successful
+    if (!$stmt->execute()) {
+        echo "Error updating cases: " . $stmt->error;
     }
 
-    // delete old subject entries
-    $delete_old_subjects = "DELETE FROM case_subject WHERE case_id = '$case_id'";
-    $conn->query($delete_old_subjects);
+    // Delete old client entry using prepared statement
+    $delete_old_client = $conn->prepare("DELETE FROM case_client WHERE case_id = ?");
+    $delete_old_client->bind_param("s", $case_id);
+    $delete_old_client->execute();
 
-    // Insert into case_subject table
-    $related_subjects = $_POST['related_subjects'];
-    foreach ($related_subjects as $related_subject) {
-      $query = "SELECT subject_id FROM subjects WHERE subject_name = '$related_subject'";
-      $result = $conn->query($query);
-      if ($result->num_rows > 0) {
-        $subject_id = $result->fetch_assoc()['subject_id'];
-      }
-      $insert_case_subject = "INSERT INTO case_subject(case_id, subject_id) VALUES ('$case_id', '$subject_id')";
-      if ($conn->query($insert_case_subject) !== TRUE) {
-          echo "Error inserting into case_subject";
-      }
+    // Insert into case_client table using prepared statement
+    $insert_case_client = $conn->prepare("INSERT INTO case_client(case_id, client_id) VALUES (?, ?)");
+
+    foreach ($_POST['related_clients'] as $related_client) {
+        $query = "SELECT client_id FROM clients WHERE client_name = ?";
+        $get_client_id = $conn->prepare($query);
+        $get_client_id->bind_param("s", $related_client);
+
+        if (!$get_client_id->execute()) {
+            echo "Error retrieving client ID: " . $get_client_id->error;
+            exit();
+        }
+
+        $result = $get_client_id->get_result();
+        if ($result->num_rows > 0) {
+            $client_id = $result->fetch_assoc()['client_id'];
+
+            $insert_case_client->bind_param("ss", $case_id, $client_id);
+            if (!$insert_case_client->execute()) {
+                echo "Error inserting into case_client: " . $insert_case_client->error;
+                exit();
+            }
+        }
     }
 
-    //delete old agent entries
-    $delete_old_agents = "DELETE FROM case_agent WHERE case_id = '$case_id'";
-    $conn->query($delete_old_agents);
+    // Delete old subject entries using prepared statement
+    $delete_old_subjects = $conn->prepare("DELETE FROM case_subject WHERE case_id = ?");
+    $delete_old_subjects->bind_param("s", $case_id);
+    $delete_old_subjects->execute();
 
-    // Insert into case_agent table
-    $related_agents = $_POST['related_agents'];
-    foreach ($related_agents as $related_agent) {
-      $query = "SELECT agent_id FROM agents WHERE name = '$related_agent'";
-      $result = $conn->query($query);
-      if ($result->num_rows > 0) {
-        $Ragent_id = $result->fetch_assoc()['agent_id'];
-      }
-      $insert_case_agent = "INSERT INTO case_agent(case_id, agent_id) VALUES ('$case_id', '$Ragent_id')";
-      if ($conn->query($insert_case_agent) !== TRUE) {
-          echo "Error inserting into case_agent";
-      }
+    // Insert into case_subject table using prepared statement
+    $insert_case_subject = $conn->prepare("INSERT INTO case_subject(case_id, subject_id) VALUES (?, ?)");
+
+    foreach ($_POST['related_subjects'] as $related_subject) {
+        $query = "SELECT subject_id FROM subjects WHERE subject_name = ?";
+        $get_subject_id = $conn->prepare($query);
+        $get_subject_id->bind_param("s", $related_subject);
+
+        if (!$get_subject_id->execute()) {
+            echo "Error retrieving subject ID: " . $get_subject_id->error;
+            exit();
+        }
+
+        $result = $get_subject_id->get_result();
+        if ($result->num_rows > 0) {
+            $subject_id = $result->fetch_assoc()['subject_id'];
+
+            $insert_case_subject->bind_param("ss", $case_id, $subject_id);
+            if (!$insert_case_subject->execute()) {
+                echo "Error inserting into case_subject: " . $insert_case_subject->error;
+                exit();
+            }
+        }
     }
 
-    // update tags table 
-    $delete_tags = "DELETE FROM tag_assoc WHERE assoc_id = '$case_id'";
-    $conn->query($delete_tags);
+    // Delete old agent entries using prepared statement
+    $delete_old_agents = $conn->prepare("DELETE FROM case_agent WHERE case_id = ?");
+    $delete_old_agents->bind_param("s", $case_id);
+    $delete_old_agents->execute();
 
-    $related_tags = $_POST['related_tags'];
-    foreach ($related_tags as $related_tag) {
-      $query = "SELECT tag_id FROM tags WHERE name = '$related_tag'";
-      $result = $conn->query($query);
-      if ($result->num_rows > 0) {
-        $tag_id = $result->fetch_assoc()['tag_id'];
-      }
-      $insert_tag_assoc = "INSERT INTO tag_assoc(tag_id, assoc_id) VALUES ('$tag_id', '$case_id')";
-      if ($conn->query($insert_tag_assoc) !== TRUE) {
-        echo "Error inserting into tag_assoc";
-      }
+    // Insert into case_agent table using prepared statement
+    $insert_case_agent = $conn->prepare("INSERT INTO case_agent(case_id, agent_id) VALUES (?, ?)");
+
+    foreach ($_POST['related_agents'] as $related_agent) {
+        $query = "SELECT agent_id FROM agents WHERE name = ?";
+        $get_agent_id = $conn->prepare($query);
+        $get_agent_id->bind_param("s", $related_agent);
+
+        if (!$get_agent_id->execute()) {
+            echo "Error retrieving agent ID: " . $get_agent_id->error;
+            exit();
+        }
+
+        $result = $get_agent_id->get_result();
+        if ($result->num_rows > 0) {
+            $Ragent_id = $result->fetch_assoc()['agent_id'];
+
+            $insert_case_agent->bind_param("ss", $case_id, $Ragent_id);
+            if (!$insert_case_agent->execute()) {
+                echo "Error inserting into case_agent: " . $insert_case_agent->error;
+                exit();
+            }
+        }
+    }
+
+    // Update tags table using prepared statement
+    $delete_tags = $conn->prepare("DELETE FROM tag_assoc WHERE assoc_id = ?");
+    $delete_tags->bind_param("s", $case_id);
+    $delete_tags->execute();
+
+    $insert_tag_assoc = $conn->prepare("INSERT INTO tag_assoc(tag_id, assoc_id) VALUES (?, ?)");
+
+    foreach ($_POST['related_tags'] as $related_tag) {
+        $query = "SELECT tag_id FROM tags WHERE name = ?";
+        $get_tag_id = $conn->prepare($query);
+        $get_tag_id->bind_param("s", $related_tag);
+
+        if (!$get_tag_id->execute()) {
+            echo "Error retrieving tag ID: " . $get_tag_id->error;
+            exit();
+        }
+
+        $result = $get_tag_id->get_result();
+        if ($result->num_rows > 0) {
+            $tag_id = $result->fetch_assoc()['tag_id'];
+
+            $insert_tag_assoc->bind_param("ss", $tag_id, $case_id);
+            if (!$insert_tag_assoc->execute()) {
+                echo "Error inserting into tag_assoc: " . $insert_tag_assoc->error;
+                exit();
+            }
+        }
     }
 
     // delete old file assoc from DB if selected 
