@@ -1,5 +1,9 @@
 <?php
 session_start();
+if (!isset($_SESSION['user'])) {
+    header("Location: ../login/login-form.php");
+    exit();
+}
 $user = $_SESSION['user'];
 $name = $user['name'];
 
@@ -124,6 +128,14 @@ if ($_POST) {
         $stmt->execute();
         $stmt->close();
     }
+
+    // Add audit log
+    include '../included/audit.php';
+    $id = $the_agent_id;
+    $type = 'Edit';
+    $audit_agent = $editing_agent_id;
+    $jsonDumpOfForm = json_encode($_POST);
+    logAudit($id, $type, $audit_agent, $jsonDumpOfForm);
     
     // Redirect or display a success message
     header("Location: ../main/dashboard.php");
@@ -197,11 +209,6 @@ if ($_POST) {
                     <option value="agent"<?php if ($agent['role'] === 'agent')echo ' selected'; ?>>agent</option>
                     <option value="admin"<?php if ($agent['role'] === 'admin')echo ' selected'; ?>>admin</option>
                 </select>
-            </div>
-
-            <div class="form-group">
-                <label for="organization_tags">Organization Tags</label>
-                <input type="text" id="organization_tags" name="organization_tags">
             </div>
 
             <div class="form-group">

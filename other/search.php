@@ -1,6 +1,12 @@
 
 <?php 
     session_start();
+
+    if (!isset($_SESSION['user'])) {
+        header("Location: ../login/login-form.php");
+        exit();
+    }
+    
     $user = $_SESSION['user'];
     $name = $user['name'];
 
@@ -48,7 +54,7 @@
         $clients = $result_clients->fetch_all(MYSQLI_ASSOC);
     
         // Search cases
-        $query_cases = "SELECT DISTINCT cases.*, clients.client_name AS client_name, subjects.subject_name AS subject_name, agents.name AS agent_name
+        $query_cases = "SELECT DISTINCT cases.*, clients.client_name AS client_name, subjects.subject_name AS subject_name, agents.name AS agent_name, tags.name AS tag_name
             FROM cases
             LEFT JOIN case_client ON cases.case_id = case_client.case_id
             LEFT JOIN clients ON case_client.client_id = clients.client_id 
@@ -56,6 +62,8 @@
             LEFT JOIN subjects ON case_subject.subject_id = subjects.subject_id
             LEFT JOIN case_agent ON cases.case_id = case_agent.case_id
             LEFT JOIN agents ON case_agent.agent_id = agents.agent_id
+            LEFT JOIN tag_assoc ON tag_assoc.assoc_id = cases.case_id
+            LEFT JOIN tags ON tags.tag_id = tag_assoc.tag_id
             WHERE
             cases.case_id LIKE '%$searchTerm%' OR
             cases.title LIKE '%$searchTerm%' OR
@@ -67,7 +75,10 @@
             cases.ud2 LIKE '%$searchTerm%' OR
             cases.ud3 LIKE '%$searchTerm%' OR
             cases.ud4 LIKE '%$searchTerm%' OR
-            clients.client_name LIKE '%$searchTerm%'";
+            clients.client_name LIKE '%$searchTerm%' OR
+            subjects.subject_name LIKE '%$searchTerm%' OR
+            agents.name LIKE '%$searchTerm%' OR
+            tags.name LIKE '%$searchTerm%'";
         $result_cases = $conn->query($query_cases);
         $cases = $result_cases->fetch_all(MYSQLI_ASSOC);
     
@@ -333,7 +344,7 @@
                 </form>
             </div>
         <script>
-        // JavaScript functions to open and close the sidebar
+        // JS functions to open and close the sidebar
         function openFilter() {
             document.getElementById("mySidebar").style.width = "400px";
             document.getElementById("content").style.marginLeft = "250px";

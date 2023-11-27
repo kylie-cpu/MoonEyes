@@ -1,5 +1,9 @@
 <?php
   session_start();
+  if (!isset($_SESSION['user'])) {
+    header("Location: ../login/login-form.php");
+    exit();
+  }
   $user = $_SESSION['user'];
   $name = $user['name'];
 

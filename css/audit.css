@@ -1,0 +1,136 @@
+body {
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    color: #000;
+    background-color: #fff;
+    margin: 0;
+    padding: 0;
+    align-items: center;
+    text-align: center;
+    display: flex;
+    flex-direction: column; 
+}
+
+.content {
+    flex: 1;
+    padding: 20px;
+    display: flex;
+    flex-direction: column; 
+    justify-content: center; 
+    align-items: center; 
+    width: 80%;
+    text-align: center;
+    box-shadow: rgba(50, 50, 93, 0.25) 0px 50px 100px -20px, rgba(0, 0, 0, 0.3) 0px 30px 60px -30px, rgba(10, 37, 64, 0.35) 0px -2px 6px 0px inset;
+}
+
+h1 {
+    color: #0b063a;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+button {
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    border-radius: 20px;
+    box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
+}
+
+.search-btn {
+    color: rgb(0, 0, 0);
+    background-color: rgb(37, 173, 82);
+    color: #fff;
+}
+
+.search-btn:hover {
+    opacity: 0.8;
+}
+
+input[type=text] {
+  width: 60%;
+  padding: 10px;
+  border: 3px solid #b9b9b9;
+  border-radius: 20px;
+  font-size: 16px;
+  font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+  background-color: rgb(255, 255, 255);
+  box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
+}
+
+.search {
+    width: 80%;
+    display: flex;
+    align-items: center; 
+    flex-direction: row; 
+    text-align: center;
+}
+
+.search form {
+    width: 80%;
+    margin: 0 auto;
+}
+
+.results {
+    margin-top: 2%;
+    width: 60%;
+    flex-wrap: wrap;
+    text-align: center;
+    margin-left: 14%;
+}
+
+table.LogTable {
+    background-color: #FFFFFF;
+    border-collapse: collapse;
+    border-width: 2px;
+    border-color: #D3D3DB;
+    border-style: solid;
+    color: #000000;
+    text-align: left;
+  }
+  
+  table.LogTable td, table.LogTable th {
+    border-width: 2px;
+    border-color: #D3D3DB;
+    border-style: solid;
+    padding: 5px;
+  }
+  
+  table.LogTable thead {
+    background-color: rgb(94, 91, 91);
+  }
+
+  p {
+    font-size: medium;
+    color: rgb(172, 172, 172);
+    font-weight: bold;
+    text-align: left;
+  }
+
+  table.LogTable {
+    background-color: #FFFFFF;
+    border-collapse: collapse;
+    border-width: 2px;
+    border-color: #D3D3DB;
+    border-style: solid;
+    color: #000000;
+    text-align: left;
+    margin-top: 0;
+  }
+  
+  table.LogTable td, table.LogTable th {
+    border-width: 2px;
+    border-color: #D3D3DB;
+    border-style: solid;
+    padding: 5px;
+  }
+  
+  table.LogTable thead {
+    background-color: #888585;
+  }
+
+  a:hover {
+    opacity: 0.8;
+  }

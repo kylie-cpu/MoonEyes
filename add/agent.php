@@ -62,6 +62,14 @@
       }
     }
 
+    // Add audit log
+    include '../included/audit.php';
+    $id = $new_agent_id;
+    $type = 'Add';
+    $audit_agent = $agent_id;
+    $jsonDumpOfForm = json_encode($_POST);
+    logAudit($id, $type, $audit_agent, $jsonDumpOfForm);
+
     // Redirect back to dashboard after submission    
     header("Location: ../main/dashboard.php"); 
     exit;
@@ -132,11 +140,6 @@
           <option value="agent">agent</option>
           <option value="admin">admin</option>
         </select>
-      </div>
-
-      <div class="form-group">
-        <label for="organization_tags">Organization Tags</label>
-        <input type="text" id="organization_tags" name="organization_tags">
       </div>
 
       <div class="form-group">

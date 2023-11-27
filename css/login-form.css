@@ -5,11 +5,11 @@ body {
 }
 
 .logo {
-    text-align: center; /* Logo takes up available space */
+    text-align: center; 
 }
 
 .logo img {
-    width: 400px; /* Adjust the width of the logo as needed */
+    width: 400px; 
     height: 100px;
     margin-bottom: 16px;
 }

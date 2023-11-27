@@ -1,6 +1,10 @@
 <?php
 // Check for the current session
 session_start();
+if (!isset($_SESSION['user'])) {
+    header("Location: ../login/login-form.php");
+    exit();
+}
 $user = $_SESSION['user'];
 $name = $user['name'];
 
@@ -59,6 +63,7 @@ if ($_POST) {
             }
         }
     }
+
     foreach ($assoc_subjects as $assoc_subject) {
         // Insert into tag_assoc for subjects
         $query = "SELECT subject_id FROM subjects WHERE subject_name = '$assoc_subject'";
@@ -71,6 +76,14 @@ if ($_POST) {
             }
         }
     }
+
+    // Add audit log
+    include '../included/audit.php';
+    $id = $tag_id;
+    $type = 'Add';
+    $audit_agent = $agent_id;
+    $jsonDumpOfForm = json_encode($_POST);
+    logAudit($id, $type, $audit_agent, $jsonDumpOfForm);
 
     // Redirect back to the dashboard after submission
     header("Location: ../main/dashboard.php");
@@ -107,7 +120,7 @@ if ($_POST) {
     <!-- Database submission form -->
     <div class="content" id="content">
         <h2>Add a Tag</h2>
-        <form action="tags.php" method="POST" class="tag-form">
+        <form action="../add/tags.php" method="POST" class="tag-form">
             <div class="form-group1">
                 <label for="tag_id"><span class="required">*</span>Tag ID</label>
                 <input class="view-input" type="text" id="tag_id" name="tag_id" value="<?php echo $unique_tag_id ?>" readonly>
@@ -179,7 +192,7 @@ if ($_POST) {
             placeholder: 'Select agents...',
             data: <?php echo json_encode($agent_names); ?>,
             });
-            });
+        });
     </script>
 </body>
 <html>

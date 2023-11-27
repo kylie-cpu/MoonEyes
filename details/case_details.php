@@ -1,10 +1,16 @@
 <?php
     // check for current session
     session_start();
+    if (!isset($_SESSION['user'])) {
+        header("Location: ../login/login-form.php");
+        exit();
+    }
+    
     $user = $_SESSION['user'];
     $name = $user['name'];
 
     $case_id = $_GET['case_id'];
+    $agent_id = $user['agent_id'];
 
     include('../database/connection.php');
 
@@ -60,6 +66,14 @@
     if ($result_assoc_files) {
         $assoc_files = $result_assoc_files->fetch_all(MYSQLI_ASSOC);
     }
+
+    // Add to audit logs 
+    include '../included/audit.php';
+    $id = $case_id;
+    $type = 'View';
+    $audit_agent = $agent_id;
+    $jsonDumpOfForm = '';
+    logAudit($id, $type, $audit_agent, $jsonDumpOfForm);
 
 ?>
 

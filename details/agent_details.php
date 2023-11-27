@@ -1,8 +1,14 @@
 
 <?php
-  session_start();
-  $user = $_SESSION['user'];
-  $name = $user['name'];
+    session_start();
+
+    if (!isset($_SESSION['user'])) {
+        header("Location: ../login/login-form.php");
+        exit();
+    }
+
+    $user = $_SESSION['user'];
+    $name = $user['name'];
 
   // make sure user is an admin role
   if ($_SESSION['user']['role'] !== 'admin') {
@@ -44,6 +50,14 @@
     if ($result_assoc_cases->num_rows > 0) {
         $assoc_cases = $result_assoc_cases->fetch_all(MYSQLI_ASSOC);
     }
+
+    // Add to audit logs 
+    include '../included/audit.php';
+    $id = $added_agent_id;
+    $type = 'View';
+    $audit_agent = $agent_id;
+    $jsonDumpOfForm = '';
+    logAudit($id, $type, $audit_agent, $jsonDumpOfForm);
     
 
 ?>

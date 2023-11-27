@@ -1,8 +1,13 @@
 <?php
     // Check for the current session
     session_start();
+    if (!isset($_SESSION['user'])) {
+        header("Location: ../login/login-form.php");
+        exit();
+    }
     $user = $_SESSION['user'];
     $name = $user['name'];
+    $agent_id = $user['agent_id'];
 
     $tag_id = $_GET['tag_id']; // Assuming you have a tag_id in the URL to identify the tag to view
 
@@ -52,6 +57,14 @@
     if ($result_subject_assoc) {   
         $subject_details = $result_subject_assoc->fetch_all(MYSQLI_ASSOC);    
     }
+
+    // Add to audit logs 
+    include '../included/audit.php';
+    $id = $tag_id;
+    $type = 'View';
+    $audit_agent = $agent_id;
+    $jsonDumpOfForm = '';
+    logAudit($id, $type, $audit_agent, $jsonDumpOfForm);
     
 ?>
 

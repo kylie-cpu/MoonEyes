@@ -1,5 +1,9 @@
 <?php
 session_start();
+if (!isset($_SESSION['user'])) {
+    header("Location: ../login/login-form.php");
+    exit();
+}
 $user = $_SESSION['user'];
 $name = $user['name'];
 
@@ -111,6 +115,14 @@ if ($_POST) {
             }
         }
     }
+
+    // Add to audit logs 
+    include '../included/audit.php';
+    $id = $tag_id;
+    $type = 'Edit';
+    $audit_agent = $new_agent_id;
+    $jsonDumpOfForm = json_encode($_POST);
+    logAudit($id, $type, $audit_agent, $jsonDumpOfForm);
 
 
     // Redirect back to the dashboard after submission
