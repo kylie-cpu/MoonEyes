@@ -306,7 +306,7 @@
                                 $file_id = $file['file_id'];
                                 $fileName = $file['fileName'];
                                 $fileURL = "../included/download.php?file_id=" . $file_id; // Link to a script that handles file download
-                                echo "<li><input type='checkbox' name='selected_files[]' class='file-checkbox' value=$fileName > <a href='$fileURL'>$fileName</a></li>";
+                                echo "<li><input type='checkbox' name='selected_files[]' class='file-checkbox' value='$fileName' > <a href='$fileURL'>$fileName</a></li>";
                             }
                             echo "</ul>";
                     

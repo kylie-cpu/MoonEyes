@@ -25,5 +25,5 @@
             echo '<a href="../other/admin.php">&#x1F4BB; Admin Controls</a>';
         }
     ?>
-    <a href="../login/login-form.php" onclick="return confirm('Are you sure you want to log out?')">&hookrightarrow; Log out</a>
+    <a href="../login/logout.php" onclick="return confirm('Are you sure you want to log out?')">&hookrightarrow; Log out</a>
 </div>

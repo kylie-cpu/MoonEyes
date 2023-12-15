@@ -3,6 +3,7 @@ session_start();
 include('../database/connection.php');
 // get user for audit logs
 $user = $_SESSION['user'];
+$name = $user['name'];
 
 // type of entity and id
 $entity_id = $_GET['entity_id'];
@@ -79,7 +80,7 @@ if ($conn->multi_query($sql) !== TRUE) {
     include '../included/audit.php';
     $id = $entity_id;
     $type = 'Delete';
-    $audit_agent = $user['agent_id'];
+    $audit_agent = $name;
     $jsonDumpOfForm = '';
     logAudit($id, $type, $audit_agent, $jsonDumpOfForm);
 

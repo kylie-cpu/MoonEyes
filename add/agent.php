@@ -74,6 +74,9 @@ if ($_POST) {
     $id = $new_agent_id;
     $type = 'Add';
     $audit_agent = $agent_id;
+    if (isset($_POST['password'])) {
+      unset($_POST['password']);
+    }
     $jsonDumpOfForm = json_encode($_POST);
     logAudit($id, $type, $audit_agent, $jsonDumpOfForm);
 

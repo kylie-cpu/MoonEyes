@@ -246,7 +246,7 @@ if ($_POST) {
 
         <div class="form-group">
           <label for="related_clients"><span class="required">*</span>Associated Client</label>
-          <select id="related_clients" name="related_clients[]" class="single-client" style="width: 43%;" multiple="multiple" required>
+          <select id="related_clients" name="related_clients[]" class="single-client" style="width: 43%;" multiple="multiple">
             <option value=""></option>
           </select>
         </div>
@@ -286,7 +286,6 @@ if ($_POST) {
         // single client input field
         $('.single-client').select2({
           placeholder: 'Select a client...',
-          maximumSelectionLength: 1,
           data: <?php echo json_encode($client_names); ?>,
         });
 
